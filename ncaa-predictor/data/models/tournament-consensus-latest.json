@@ -1,0 +1,142 @@
+{
+  "id": "tournament-consensus-auto",
+  "label": "Learned Tournament Consensus",
+  "model_type": "learned_tournament_consensus",
+  "generated_at": "2026-03-15T02:50:49.884341+00:00",
+  "snapshot_policy": "selection_sunday_latest_stable",
+  "training_seasons": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2021,
+    2022,
+    2023,
+    2024
+  ],
+  "data_sources": [
+    "ESPN BPI season snapshots",
+    "Warren Nolan NET season snapshots",
+    "Massey Ratings archive",
+    "Sports Reference tournament results"
+  ],
+  "source_coverage": {
+    "summary": [
+      "Training set built from free annual pre-tournament snapshots"
+    ],
+    "seasonsBySource": {
+      "bpi": [
+        2016,
+        2017,
+        2018,
+        2019,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "net": [
+        2016,
+        2017,
+        2018,
+        2019,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "massey": [
+        2016,
+        2017,
+        2018,
+        2019,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "sports_reference": [
+        2016,
+        2017,
+        2018,
+        2019,
+        2021,
+        2022,
+        2023,
+        2024
+      ]
+    }
+  },
+  "source_weights": {
+    "torvik_efficiency": 0.207,
+    "torvik_barthag": 0.1407,
+    "bpi": 0.2935,
+    "net": 0.068,
+    "resume_form": 0.2908
+  },
+  "margin_model": {
+    "intercept": -0.9698951175170777,
+    "coefficients": {
+      "torvik_efficiency": 0.1387262934045984,
+      "torvik_barthag": 0.09433387918855579,
+      "bpi": -0.19673441145825266,
+      "net": 0.04558625476198086,
+      "resume_form": 0.1949537924657306,
+      "seed_diff": -0.8697923869569306,
+      "same_conference": 0.0,
+      "observed_source_count": 0.19495379246575792,
+      "latent_consensus_margin": 0.12
+    }
+  },
+  "win_model": {
+    "intercept": -0.15368096141586562,
+    "coefficients": {
+      "torvik_efficiency": 0.024286231030237696,
+      "torvik_barthag": 0.01651463710063362,
+      "bpi": -0.03487251278852642,
+      "net": 0.0041946517487352255,
+      "resume_form": 0.030949763829735473,
+      "seed_diff": -0.11655445310637,
+      "same_conference": 0.0,
+      "observed_source_count": 0.030949763829735473,
+      "source_consensus_margin": 0.06
+    }
+  },
+  "calibration": {
+    "anchors": [
+      {
+        "raw": 0.10933228658908975,
+        "calibrated": 0.1276595744680851
+      },
+      {
+        "raw": 0.22402358417686807,
+        "calibrated": 0.21052631578947367
+      },
+      {
+        "raw": 0.28927785038932596,
+        "calibrated": 0.3709677419354839
+      },
+      {
+        "raw": 0.49756757270016316,
+        "calibrated": 0.5357142857142858
+      },
+      {
+        "raw": 0.7109450870331612,
+        "calibrated": 0.6363636363636364
+      },
+      {
+        "raw": 0.8184436941372712,
+        "calibrated": 0.8452380952380952
+      }
+    ]
+  },
+  "metrics": {
+    "logLoss": 1.0252193887190242,
+    "brierScore": 0.20212272388781102,
+    "marginMae": 10.29223601351085,
+    "calibrationError": 0.044546657346991224,
+    "upsetRecall": 0.0
+  },
+  "artifact_path": "data/models/tournament-consensus-latest.json",
+  "notes": "Automatically trained from annual pre-tournament snapshots and rolling-season evaluation."
+}

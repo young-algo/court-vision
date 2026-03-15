@@ -1,0 +1,16 @@
+canonical_team_id,canonical_team_name,source,source_team_name,match_method,needs_review
+connecticut,UConn,manual,UConn,exact,false
+connecticut,UConn,manual,Connecticut,alias,false
+saint-marys,Saint Mary's,manual,Saint Mary's,exact,false
+saint-marys,Saint Mary's,manual,Saint Mary's Gaels,alias,false
+saint-marys,Saint Mary's,manual,Saint Marys,alias,false
+nc-state,NC State,manual,NC State,exact,false
+nc-state,NC State,manual,N.C. State,alias,false
+nc-state,NC State,manual,North Carolina State,alias,false
+miami-fl,Miami (FL),manual,Miami,alias,true
+miami-fl,Miami (FL),manual,Miami (FL),alias,false
+miami-oh,Miami (OH),manual,Miami (OH),exact,false
+mississippi,Ole Miss,manual,Mississippi,alias,false
+mississippi,Ole Miss,manual,Ole Miss,alias,false
+st-johns,St. John's,manual,St. John's,exact,false
+st-johns,St. John's,manual,Saint John's,alias,false

@@ -1,0 +1,319 @@
+{
+  "id": "tournament-consensus-candidate",
+  "label": "Learned Tournament Consensus Candidate",
+  "model_type": "learned_tournament_consensus",
+  "generated_at": "2026-03-15T03:29:49.378731+00:00",
+  "snapshot_policy": "selection_sunday_latest_stable",
+  "training_seasons": [
+    2017,
+    2022,
+    2024,
+    2025
+  ],
+  "data_sources": [
+    "Kaggle MMasseyOrdinals",
+    "Local Massey master composite archive",
+    "Archive team sheet ranks",
+    "Archive KenPom/Barttorvik",
+    "Archive EvanMiya",
+    "Archive 538 ratings"
+  ],
+  "source_coverage": {
+    "summary": [
+      "bpi: 3 seasons",
+      "net: 3 seasons",
+      "massey_ordinal: 4 seasons",
+      "massey_master: 2 seasons",
+      "kenpom_badj_em: 4 seasons",
+      "evanmiya_relative_rating: 4 seasons",
+      "fivethirtyeight_power: 3 seasons",
+      "resume_rank_blend: 3 seasons"
+    ],
+    "seasonsBySource": {
+      "bpi": [
+        2022,
+        2024,
+        2025
+      ],
+      "net": [
+        2022,
+        2024,
+        2025
+      ],
+      "massey_ordinal": [
+        2017,
+        2022,
+        2024,
+        2025
+      ],
+      "massey_master": [
+        2017,
+        2022
+      ],
+      "kenpom_badj_em": [
+        2017,
+        2022,
+        2024,
+        2025
+      ],
+      "evanmiya_relative_rating": [
+        2017,
+        2022,
+        2024,
+        2025
+      ],
+      "fivethirtyeight_power": [
+        2017,
+        2022,
+        2024
+      ],
+      "resume_rank_blend": [
+        2022,
+        2024,
+        2025
+      ]
+    }
+  },
+  "source_weights": {
+    "bpi_rank_percentile_diff": 0.014,
+    "net_rank_percentile_diff": 0.2893,
+    "massey_ordinal_rank_percentile_diff": 0.0243,
+    "kenpom_badj_em_power_diff": 0.0883,
+    "evanmiya_relative_rating_power_diff": 0.2531,
+    "fivethirtyeight_power_power_diff": 0.0587,
+    "resume_rank_blend_percentile_diff": 0.2722
+  },
+  "margin_model": {
+    "intercept": -3.2860215072695816e-16,
+    "coefficients": {
+      "bpi_rank_percentile_diff": 0.3969675750899604,
+      "net_rank_percentile_diff": -8.190000901671931,
+      "massey_ordinal_rank_percentile_diff": -0.6880148584108502,
+      "kenpom_badj_em_power_diff": 2.5011222772858646,
+      "evanmiya_relative_rating_power_diff": 7.1656873614432985,
+      "fivethirtyeight_power_power_diff": -1.662822373325355,
+      "resume_rank_blend_percentile_diff": 7.707421732377975,
+      "seed_diff": -3.762203533296646,
+      "same_conference": -3.5708109208983976e-17,
+      "available_predictive_rank_count": 9.87919854857799e-14,
+      "available_power_feature_count": 1.2410290850767107e-13,
+      "available_resume_feature_count": -1.058538747211756e-13,
+      "missing_bpi_rank": -6.800981317463187e-16,
+      "missing_net_rank": -6.800981317463307e-16,
+      "missing_massey_ordinal_rank": 2.4352388743863264e-14,
+      "missing_kenpom_badj_em": 2.9433175739824696e-14,
+      "missing_evanmiya_relative_rating": 2.943317573982469e-14,
+      "missing_fivethirtyeight_power": 9.512138543632921e-14,
+      "missing_resume_rank_blend": -6.800981317459025e-16
+    }
+  },
+  "win_model": {
+    "intercept": -9.900907104015847e-07,
+    "coefficients": {
+      "bpi_rank_percentile_diff": -0.0710339428437347,
+      "net_rank_percentile_diff": -1.5027368814604989,
+      "massey_ordinal_rank_percentile_diff": 0.12215684211394288,
+      "kenpom_badj_em_power_diff": 0.8430212140698505,
+      "evanmiya_relative_rating_power_diff": 1.185513240342443,
+      "fivethirtyeight_power_power_diff": -0.724997332145002,
+      "resume_rank_blend_percentile_diff": 0.991184862908752,
+      "seed_diff": -0.6323503330717336,
+      "same_conference": -6.533994582266113e-06,
+      "available_predictive_rank_count": -6.194718371020051e-06,
+      "available_power_feature_count": 2.0172413628331882e-05,
+      "available_resume_feature_count": -1.2349746814814244e-05,
+      "missing_bpi_rank": 1.0310094555948808e-05,
+      "missing_net_rank": 1.0310094555948808e-05,
+      "missing_massey_ordinal_rank": -1.2084624404918944e-05,
+      "missing_kenpom_badj_em": -1.5050534600511686e-05,
+      "missing_evanmiya_relative_rating": -1.5050534600511686e-05,
+      "missing_fivethirtyeight_power": -2.1010579747323137e-05,
+      "missing_resume_rank_blend": 1.0310094555948808e-05
+    }
+  },
+  "calibration": {
+    "anchors": [
+      {
+        "raw": 0.06667156930533072,
+        "calibrated": 0.0
+      },
+      {
+        "raw": 0.17479757316098726,
+        "calibrated": 0.13953488372093023
+      },
+      {
+        "raw": 0.2641797622263432,
+        "calibrated": 0.3111742424242434
+      },
+      {
+        "raw": 0.5000023333763893,
+        "calibrated": 0.5
+      },
+      {
+        "raw": 0.735823866445994,
+        "calibrated": 0.6888257575757537
+      },
+      {
+        "raw": 0.8833003087512471,
+        "calibrated": 0.875
+      }
+    ]
+  },
+  "metrics": {
+    "logLoss": 0.6382579179701204,
+    "brierScore": 0.19664266297438404,
+    "marginMae": 9.956003311317543,
+    "calibrationError": 0.11663170729363476,
+    "upsetRecall": 0.17672970304549251
+  },
+  "artifact_path": "data/models/tournament-consensus-candidate.json",
+  "notes": "Training-only candidate artifact built from source-native feature semantics. Not promoted by default.",
+  "runtimeCompatible": false,
+  "featureSemantics": [
+    {
+      "feature": "bpi_rank_percentile_diff",
+      "family": "rank_transforms",
+      "direction": "higher_is_better"
+    },
+    {
+      "feature": "net_rank_percentile_diff",
+      "family": "rank_transforms",
+      "direction": "higher_is_better"
+    },
+    {
+      "feature": "massey_ordinal_rank_percentile_diff",
+      "family": "rank_transforms",
+      "direction": "higher_is_better"
+    },
+    {
+      "feature": "kenpom_badj_em_power_diff",
+      "family": "predictive_ratings",
+      "direction": "higher_is_better"
+    },
+    {
+      "feature": "evanmiya_relative_rating_power_diff",
+      "family": "predictive_ratings",
+      "direction": "higher_is_better"
+    },
+    {
+      "feature": "fivethirtyeight_power_power_diff",
+      "family": "predictive_ratings",
+      "direction": "higher_is_better"
+    },
+    {
+      "feature": "resume_rank_blend_percentile_diff",
+      "family": "resume_context",
+      "direction": "higher_is_better"
+    },
+    {
+      "feature": "massey_composite_rank_percentile_diff",
+      "family": "experimental_rank_transforms",
+      "direction": "higher_is_better"
+    },
+    {
+      "feature": "massey_mean_rank_percentile_diff",
+      "family": "experimental_rank_transforms",
+      "direction": "higher_is_better"
+    },
+    {
+      "feature": "massey_median_rank_percentile_diff",
+      "family": "experimental_rank_transforms",
+      "direction": "higher_is_better"
+    },
+    {
+      "feature": "massey_rank_stdev_advantage",
+      "family": "experimental_consensus_dispersion",
+      "direction": "higher_is_better"
+    },
+    {
+      "feature": "massey_win_pct_power_diff",
+      "family": "experimental_predictive_ratings",
+      "direction": "higher_is_better"
+    },
+    {
+      "feature": "seed_diff",
+      "family": "resume_context",
+      "direction": "lower_is_better"
+    },
+    {
+      "feature": "same_conference",
+      "family": "resume_context",
+      "direction": "higher_is_better"
+    },
+    {
+      "feature": "available_predictive_rank_count",
+      "family": "missingness",
+      "direction": "higher_is_better"
+    },
+    {
+      "feature": "available_power_feature_count",
+      "family": "missingness",
+      "direction": "higher_is_better"
+    },
+    {
+      "feature": "available_resume_feature_count",
+      "family": "missingness",
+      "direction": "higher_is_better"
+    },
+    {
+      "feature": "missing_bpi_rank",
+      "family": "missingness",
+      "direction": "lower_is_better"
+    },
+    {
+      "feature": "missing_net_rank",
+      "family": "missingness",
+      "direction": "lower_is_better"
+    },
+    {
+      "feature": "missing_massey_ordinal_rank",
+      "family": "missingness",
+      "direction": "lower_is_better"
+    },
+    {
+      "feature": "missing_massey_composite_rank",
+      "family": "missingness",
+      "direction": "lower_is_better"
+    },
+    {
+      "feature": "missing_massey_mean_rank",
+      "family": "missingness",
+      "direction": "lower_is_better"
+    },
+    {
+      "feature": "missing_massey_median_rank",
+      "family": "missingness",
+      "direction": "lower_is_better"
+    },
+    {
+      "feature": "missing_massey_rank_stdev",
+      "family": "missingness",
+      "direction": "lower_is_better"
+    },
+    {
+      "feature": "missing_kenpom_badj_em",
+      "family": "missingness",
+      "direction": "lower_is_better"
+    },
+    {
+      "feature": "missing_evanmiya_relative_rating",
+      "family": "missingness",
+      "direction": "lower_is_better"
+    },
+    {
+      "feature": "missing_fivethirtyeight_power",
+      "family": "missingness",
+      "direction": "lower_is_better"
+    },
+    {
+      "feature": "missing_massey_win_pct",
+      "family": "missingness",
+      "direction": "lower_is_better"
+    },
+    {
+      "feature": "missing_resume_rank_blend",
+      "family": "missingness",
+      "direction": "lower_is_better"
+    }
+  ]
+}

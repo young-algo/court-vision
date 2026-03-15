@@ -1,0 +1,13 @@
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+.venv
+__pycache__
+historical_pipeline/__pycache__
+historical_pipeline/data/raw
+historical_pipeline/data/processed
+historical_pipeline/data/cache
+historical_pipeline/data/external
