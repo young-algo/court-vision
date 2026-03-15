@@ -1,0 +1,6 @@
+/.DS_Store
+/.playwright-cli/
+/bpi_data.json
+/net_data.json
+/torvik_data.json
+/package-lock.json
