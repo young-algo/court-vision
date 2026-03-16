@@ -53,8 +53,8 @@ export default function DailySlatePage() {
 
       <div className="grid gap-4">
         {games.map((game) => {
-          const favorite = game.prediction.expectedMargin >= 0 ? game.teamA : game.teamB;
-          const underdog = game.prediction.expectedMargin >= 0 ? game.teamB : game.teamA;
+          const favorite = game.prediction.winProbabilityA >= 0.5 ? game.teamA : game.teamB;
+          const underdog = game.prediction.winProbabilityA >= 0.5 ? game.teamB : game.teamA;
 
           return (
             <Card key={game.id} className="border-border/70 bg-card/95 px-5 py-5">

@@ -129,7 +129,7 @@ export default function MatchupPredictor() {
 
   const favorite = useMemo(() => {
     if (!prediction) return null;
-    return prediction.prediction.expectedMargin >= 0 ? prediction.teamA : prediction.teamB;
+    return prediction.prediction.winProbabilityA >= 0.5 ? prediction.teamA : prediction.teamB;
   }, [prediction]);
 
   return (

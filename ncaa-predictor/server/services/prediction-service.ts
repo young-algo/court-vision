@@ -478,7 +478,7 @@ export class PredictionService {
       expectedMargin,
       winProbabilityA,
       winProbabilityB,
-      impliedSpread: formatSpread(teamA, teamB, expectedMargin),
+      impliedSpread: formatSpread(teamA, teamB, probabilityToMargin(winProbabilityA)),
       uncertaintyBand: {
         low: expectedMargin - bandRadius,
         high: expectedMargin + bandRadius,
