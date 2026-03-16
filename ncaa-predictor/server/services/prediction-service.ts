@@ -376,7 +376,9 @@ export class PredictionService {
       this.latentConsensus.teamScores.get(teamBId)!;
     const latentConsensusMargin = latentScoreDiff * 5.75 + homeCourtAdjustment(venue) * 0.25;
     const sameConference = teamA.conference === teamB.conference ? 1 : 0;
-    const seedDiff = clamp(teamB.torvikRank - teamA.torvikRank, -64, 64);
+    const estimatedSeedA = clamp(Math.ceil(teamA.torvikRank / 4), 1, 16);
+    const estimatedSeedB = clamp(Math.ceil(teamB.torvikRank / 4), 1, 16);
+    const seedDiff = estimatedSeedA - estimatedSeedB;
     const expectedMargin = this.learnedArtifact
       ? this.learnedExpectedMargin(
           normalizedComponents,
@@ -384,6 +386,10 @@ export class PredictionService {
           latentConsensusMargin,
           seedDiff,
           sameConference,
+          snapshotA,
+          snapshotB,
+          teamA,
+          teamB,
         )
       : sourceConsensusMargin * 0.72 + latentConsensusMargin * 0.28;
     const disagreementIndex = standardDeviation(
@@ -405,6 +411,10 @@ export class PredictionService {
       normalizedComponents,
       seedDiff,
       sameConference,
+      snapshotA,
+      snapshotB,
+      teamA,
+      teamB,
     );
     const winProbabilityB = 1 - winProbabilityA;
     const bandRadius =
@@ -991,6 +1001,10 @@ export class PredictionService {
     latentConsensusMargin: number,
     seedDiff: number,
     sameConference: number,
+    snapshotA?: TeamRatingSnapshot,
+    snapshotB?: TeamRatingSnapshot,
+    teamA?: Team,
+    teamB?: Team,
   ) {
     if (!this.learnedArtifact) {
       return sourceConsensusMargin * 0.72 + latentConsensusMargin * 0.28;
@@ -1002,10 +1016,20 @@ export class PredictionService {
       latentConsensusMargin,
       seedDiff,
       sameConference,
+      snapshotA,
+      snapshotB,
+      teamA,
+      teamB,
     );
 
+    const scaledFeature = (key: string, value: number) => {
+      const mean = this.learnedArtifact!.scaler.means[key] ?? 0;
+      const scale = this.learnedArtifact!.scaler.scales[key] ?? 1;
+      return (value - mean) / scale;
+    };
+
     return Object.entries(this.learnedArtifact.margin_model.coefficients).reduce(
-      (sum, [key, coefficient]) => sum + (featureMap[key] ?? 0) * coefficient,
+      (sum, [key, coefficient]) => sum + scaledFeature(key, featureMap[key] ?? 0) * coefficient,
       this.learnedArtifact.margin_model.intercept,
     );
   }
@@ -1018,19 +1042,27 @@ export class PredictionService {
     components: PredictionComponent[],
     seedDiff: number,
     sameConference: number,
+    snapshotA?: TeamRatingSnapshot,
+    snapshotB?: TeamRatingSnapshot,
+    teamA?: Team,
+    teamB?: Team,
   ) {
     const learnedProbability = this.learnedProbability(
       components,
       rawProbability,
       seedDiff,
       sameConference,
+      snapshotA,
+      snapshotB,
+      teamA,
+      teamB,
     );
     const isotonic = interpolateCalibration(
       learnedProbability,
       this.learnedArtifact?.calibration.anchors ?? CALIBRATION_ANCHORS,
     );
     const observedShare = observedSourceCount / sourceCount;
-    const shrink = clamp(0.9 - disagreementIndex * 0.02 - (1 - observedShare) * 0.18, 0.58, 0.92);
+    const shrink = clamp(0.93 - disagreementIndex * 0.01 - (1 - observedShare) * 0.10, 0.75, 0.95);
     return clamp(0.5 + (isotonic - 0.5) * shrink, 0.01, 0.99);
   }
 
@@ -1039,6 +1071,10 @@ export class PredictionService {
     rawProbability: number,
     seedDiff: number,
     sameConference: number,
+    snapshotA?: TeamRatingSnapshot,
+    snapshotB?: TeamRatingSnapshot,
+    teamA?: Team,
+    teamB?: Team,
   ) {
     if (!this.learnedArtifact) {
       return rawProbability;
@@ -1050,9 +1086,19 @@ export class PredictionService {
       0,
       seedDiff,
       sameConference,
+      snapshotA,
+      snapshotB,
+      teamA,
+      teamB,
     );
+    const scaledFeature = (key: string, value: number) => {
+      const mean = this.learnedArtifact!.scaler.means[key] ?? 0;
+      const scale = this.learnedArtifact!.scaler.scales[key] ?? 1;
+      return (value - mean) / scale;
+    };
+
     const logit = Object.entries(this.learnedArtifact.win_model.coefficients).reduce(
-      (sum, [key, coefficient]) => sum + (featureMap[key] ?? 0) * coefficient,
+      (sum, [key, coefficient]) => sum + scaledFeature(key, featureMap[key] ?? 0) * coefficient,
       this.learnedArtifact.win_model.intercept,
     );
     return clamp(1 / (1 + Math.exp(-logit)), 0.01, 0.99);
@@ -1064,6 +1110,10 @@ export class PredictionService {
     latentConsensusMargin: number,
     seedDiff: number,
     sameConference: number,
+    snapshotA?: TeamRatingSnapshot,
+    snapshotB?: TeamRatingSnapshot,
+    teamA?: Team,
+    teamB?: Team,
   ) {
     const featureMap: Record<string, number> = {
       source_consensus_margin: sourceConsensusMargin,
@@ -1078,6 +1128,49 @@ export class PredictionService {
       featureMap[`${component.key}_win_prob`] = component.winProbabilityA;
       featureMap[`${component.key}_observed`] = component.availability === "observed" ? 1 : 0;
     });
+
+    if (snapshotA && snapshotB && teamA && teamB) {
+      // Fixed field size = 362 (typical D1 count); denominator = 361 to match Python training pipeline
+      const getPct = (rank: number | null) => (rank == null ? null : 1 - (rank - 1) / 361);
+
+      const aBpi = getPct(snapshotA.bpiRank);
+      const bBpi = getPct(snapshotB.bpiRank);
+      const missingBpi = aBpi == null || bBpi == null ? 1 : 0;
+      featureMap["missing_bpi_rank"] = missingBpi;
+      featureMap["bpi_rank_percentile_diff"] = missingBpi ? 0 : aBpi! - bBpi!;
+
+      const aNet = getPct(snapshotA.netRank);
+      const bNet = getPct(snapshotB.netRank);
+      const missingNet = aNet == null || bNet == null ? 1 : 0;
+      featureMap["missing_net_rank"] = missingNet;
+      featureMap["net_rank_percentile_diff"] = missingNet ? 0 : aNet! - bNet!;
+
+      const aMassey = getPct(teamA.torvikRank);
+      const bMassey = getPct(teamB.torvikRank);
+      const missingMassey = 0;
+      featureMap["missing_massey_ordinal_rank"] = missingMassey;
+      featureMap["massey_ordinal_rank_percentile_diff"] = aMassey! - bMassey!;
+
+      featureMap["missing_kenpom_badj_em"] = 0;
+      featureMap["kenpom_badj_em_power_diff"] = snapshotA.efficiencyMargin - snapshotB.efficiencyMargin;
+
+      featureMap["missing_evanmiya_relative_rating"] = 1;
+      featureMap["evanmiya_relative_rating_power_diff"] = 0;
+
+      featureMap["missing_fivethirtyeight_power"] = 1;
+      featureMap["fivethirtyeight_power_power_diff"] = 0;
+
+      featureMap["missing_resume_rank_blend"] = 0;
+      // NOTE: semantic divergence from Python training pipeline.
+      // Python computes this as the average of 7 resume rank percentile diffs.
+      // TS uses (resumeScore diff) / 100. The scaler normalizes both, but the
+      // reduced feature set intentionally excludes this feature to avoid the mismatch.
+      featureMap["resume_rank_blend_percentile_diff"] = (snapshotA.resumeScore - snapshotB.resumeScore) / 100;
+
+      featureMap["available_predictive_rank_count"] = 3 - (missingBpi + missingNet + missingMassey);
+      featureMap["available_power_feature_count"] = 2;
+      featureMap["available_resume_feature_count"] = 1;
+    }
 
     return featureMap;
   }

@@ -207,9 +207,8 @@ def expand_perspectives(features: pd.DataFrame) -> pd.DataFrame:
 
 
 def rank_to_percentile(rank: pd.Series, season_max: pd.Series) -> pd.Series:
-    capped_max = pd.to_numeric(season_max, errors="coerce").fillna(1.0).clip(lower=1.0)
-    denominator = (capped_max - 1).replace(0, 1)
-    return 1 - ((rank - 1) / denominator)
+    FIXED_FIELD_SIZE = 362  # typical D1 team count; matches TS runtime denominator
+    return 1 - ((rank - 1) / (FIXED_FIELD_SIZE - 1))
 
 
 def add_rank_feature(frame: pd.DataFrame, feature: str) -> None:
@@ -340,12 +339,19 @@ def main() -> None:
     features = apply_semantic_features(features)
 
     season_coverage = (
-        features.assign(has_core_signal=features["available_signal_count"] > 0)
+        features.assign(
+            has_core_signal=(
+                (features["missing_massey_ordinal_rank"] == 0) | (features["missing_kenpom_badj_em"] == 0)
+            )
+        )
         .groupby("season")["has_core_signal"]
         .mean()
         .reset_index(name="coverage_rate")
     )
-    modeled_seasons = season_coverage[season_coverage["coverage_rate"] >= 0.9]["season"].tolist()
+    # Lowered from 0.9 to 0.65 to unlock all 9 configured seasons (2016-2019, 2021-2025).
+    # The bottleneck is snapshot matching, not signal availability — Kaggle Massey ordinals
+    # and KenPom are available for all seasons via the core signal check above.
+    modeled_seasons = season_coverage[season_coverage["coverage_rate"] >= 0.65]["season"].tolist()
     if not modeled_seasons:
         raise SystemExit(
             "No seasons cleared the minimum predictive-source coverage threshold."

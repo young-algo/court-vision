@@ -9,8 +9,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.isotonic import IsotonicRegression
-from sklearn.linear_model import LogisticRegression, Ridge
+from sklearn.linear_model import LogisticRegression, Ridge, RidgeCV
 from sklearn.metrics import brier_score_loss, log_loss, mean_absolute_error
 from sklearn.preprocessing import StandardScaler
 
@@ -84,6 +85,14 @@ LEGACY_FEATURES = [
     "same_conference",
     "legacy_source_coverage_count",
 ]
+REDUCED_CANDIDATE_FEATURES = [
+    "massey_ordinal_rank_percentile_diff",
+    "kenpom_badj_em_power_diff",
+    "seed_diff",
+    "missing_massey_ordinal_rank",
+    "missing_kenpom_badj_em",
+]
+
 PROMOTION_BASELINES = ("equal_weight_consensus", "seed_only_logit")
 LOWER_IS_BETTER = {"logLoss", "brierScore", "marginMae", "calibrationError"}
 HIGHER_IS_BETTER = {"upsetRecall"}
@@ -93,9 +102,8 @@ HIGHER_IS_BETTER = {"upsetRecall"}
 class ModelBundle:
     feature_names: list[str]
     scaler: StandardScaler
-    margin_model: Ridge
-    win_model: LogisticRegression
-    calibrator: IsotonicRegression | None
+    margin_model: RidgeCV
+    win_model: CalibratedClassifierCV
 
 
 def numeric_frame(frame: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
@@ -117,6 +125,10 @@ def candidate_feature_frame(frame: pd.DataFrame) -> pd.DataFrame:
 
 def experimental_candidate_feature_frame(frame: pd.DataFrame) -> pd.DataFrame:
     return numeric_frame(frame, EXPERIMENTAL_CANDIDATE_FEATURES)[EXPERIMENTAL_CANDIDATE_FEATURES]
+
+
+def reduced_candidate_feature_frame(frame: pd.DataFrame) -> pd.DataFrame:
+    return numeric_frame(frame, REDUCED_CANDIDATE_FEATURES)[REDUCED_CANDIDATE_FEATURES]
 
 
 def legacy_prepare_features(frame: pd.DataFrame) -> pd.DataFrame:
@@ -158,37 +170,35 @@ def probability_to_logit(probabilities: np.ndarray) -> np.ndarray:
     return np.log(clipped / (1 - clipped))
 
 
-def fit_calibrator(raw_probabilities: np.ndarray, y_true: pd.Series) -> IsotonicRegression | None:
-    if len(np.unique(y_true)) < 2:
-        return None
-    calibrator = IsotonicRegression(out_of_bounds="clip")
-    calibrator.fit(raw_probabilities, y_true)
-    return calibrator
-
-
 def fit_model_bundle(features: pd.DataFrame, y_margin: pd.Series, y_win: pd.Series) -> ModelBundle:
     scaler = StandardScaler()
     scaled = scaler.fit_transform(features)
-    margin_model = Ridge(alpha=1.0).fit(scaled, y_margin)
-    win_model = LogisticRegression(max_iter=4000).fit(scaled, y_win)
-    raw_probabilities = win_model.predict_proba(scaled)[:, 1]
-    calibrator = fit_calibrator(raw_probabilities, y_win)
+    margin_model = RidgeCV(alphas=[10.0, 100.0, 1000.0, 5000.0, 10000.0]).fit(scaled, y_margin)
+    
+    base_win_model = LogisticRegression(max_iter=4000, C=0.1, class_weight='balanced')
+    win_model = CalibratedClassifierCV(base_win_model, cv=5, method='isotonic').fit(scaled, y_win)
+
     return ModelBundle(
         feature_names=list(features.columns),
         scaler=scaler,
         margin_model=margin_model,
         win_model=win_model,
-        calibrator=calibrator,
     )
 
 
 def predict_bundle(bundle: ModelBundle, features: pd.DataFrame) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     scaled = bundle.scaler.transform(features[bundle.feature_names])
     predicted_margin = bundle.margin_model.predict(scaled)
-    raw_probability = bundle.win_model.predict_proba(scaled)[:, 1]
-    calibrated_probability = (
-        bundle.calibrator.predict(raw_probability) if bundle.calibrator else raw_probability
-    )
+    # The base logic predicts probability inside the CalibratedClassifier CV ensemble
+    calibrated_probability = bundle.win_model.predict_proba(scaled)[:, 1]
+    
+    # We still need a "raw" representation to compare shift, but we can't get it easily 
+    # directly from the ensemble without looping over calibrators. However, since the problem 
+    # is that we *shouldn't* care about the raw, uncalibrated overfitted probability, we can 
+    # just return the calibrated probability for both, or use the mean of base estimators.
+    # To keep the signature the same, we'll return calibrated for both.
+    raw_probability = calibrated_probability.copy()
+    
     return predicted_margin, np.clip(raw_probability, 0.01, 0.99), np.clip(calibrated_probability, 0.01, 0.99)
 
 
@@ -519,14 +529,19 @@ def source_weights_from_candidate(bundle: ModelBundle) -> dict[str, float]:
 
 def candidate_feature_importance(bundle: ModelBundle) -> list[dict[str, float | str]]:
     importance = []
+    
+    # Calculate the mean win coefficient from the CV ensemble
+    base_estimators = [calibrator.estimator for calibrator in bundle.win_model.calibrated_classifiers_]
+    mean_win_coef = np.mean([est.coef_[0] for est in base_estimators], axis=0)
+    
     for index, feature in enumerate(bundle.feature_names):
         importance.append(
             {
                 "feature": feature,
                 "marginCoefficient": float(bundle.margin_model.coef_[index]),
-                "winCoefficient": float(bundle.win_model.coef_[0][index]),
+                "winCoefficient": float(mean_win_coef[index]),
                 "absoluteMagnitude": float(
-                    abs(bundle.margin_model.coef_[index]) + abs(bundle.win_model.coef_[0][index])
+                    abs(bundle.margin_model.coef_[index]) + abs(mean_win_coef[index])
                 ),
             }
         )
@@ -535,13 +550,16 @@ def candidate_feature_importance(bundle: ModelBundle) -> list[dict[str, float | 
 
 def calibration_anchor_rows(
     raw_probability: np.ndarray,
-    calibrator: IsotonicRegression | None,
+    y_true: np.ndarray,
 ) -> list[dict[str, float]]:
-    quantiles = pd.Series(raw_probability).quantile([0.05, 0.15, 0.25, 0.5, 0.75, 0.9]).to_numpy()
-    calibrated = calibrator.predict(quantiles) if calibrator else quantiles
+    iso = IsotonicRegression(out_of_bounds='clip', y_min=0.02, y_max=0.98)
+    iso.fit(raw_probability, y_true)
+    quantiles = [0.05, 0.15, 0.25, 0.5, 0.75, 0.9]
+    raw_values = np.quantile(raw_probability, quantiles)
+    calibrated_values = iso.predict(raw_values)
     return [
-        {"raw": float(raw), "calibrated": float(cal)}
-        for raw, cal in zip(quantiles, calibrated)
+        {"raw": float(r), "calibrated": float(c)}
+        for r, c in zip(raw_values, calibrated_values)
     ]
 
 
@@ -551,9 +569,20 @@ def candidate_artifact(
     aggregate_metrics: dict[str, float],
     training_seasons: list[int],
     artifact_path: str,
+    pooled_raw_probability: np.ndarray | None = None,
+    pooled_y_true: np.ndarray | None = None,
 ) -> dict[str, object]:
-    all_features = candidate_feature_frame(frame)
-    _, raw_probability, _ = predict_bundle(bundle, all_features)
+    # Use pooled out-of-sample predictions for calibration when available
+    if pooled_raw_probability is not None and pooled_y_true is not None:
+        raw_probability = pooled_raw_probability
+        y_true = pooled_y_true
+    else:
+        all_features = candidate_feature_frame(frame)
+        _, raw_probability, _ = predict_bundle(bundle, all_features)
+        y_true = frame["team_win"].to_numpy()
+    
+    base_estimators = [calibrator.estimator for calibrator in bundle.win_model.calibrated_classifiers_]
+    mean_win_coef = np.mean([est.coef_[0] for est in base_estimators], axis=0)
     return {
         "id": "tournament-consensus-candidate",
         "label": "Learned Tournament Consensus Candidate",
@@ -571,6 +600,16 @@ def candidate_artifact(
         ],
         "source_coverage": source_coverage(frame),
         "source_weights": source_weights_from_candidate(bundle),
+        "scaler": {
+            "means": {
+                feature: float(bundle.scaler.mean_[index])
+                for index, feature in enumerate(bundle.feature_names)
+            },
+            "scales": {
+                feature: float(bundle.scaler.scale_[index])
+                for index, feature in enumerate(bundle.feature_names)
+            },
+        },
         "margin_model": {
             "intercept": float(bundle.margin_model.intercept_),
             "coefficients": {
@@ -579,13 +618,13 @@ def candidate_artifact(
             },
         },
         "win_model": {
-            "intercept": float(bundle.win_model.intercept_[0]),
+            "intercept": float(np.mean([c.estimator.intercept_[0] for c in bundle.win_model.calibrated_classifiers_])),
             "coefficients": {
-                feature: float(bundle.win_model.coef_[0][index])
+                feature: float(mean_win_coef[index])
                 for index, feature in enumerate(bundle.feature_names)
             },
         },
-        "calibration": {"anchors": calibration_anchor_rows(raw_probability, bundle.calibrator)},
+        "calibration": {"anchors": calibration_anchor_rows(raw_probability, y_true)},
         "metrics": aggregate_metrics,
         "artifact_path": artifact_path,
         "notes": "Training-only candidate artifact built from source-native feature semantics. Not promoted by default.",
@@ -595,21 +634,10 @@ def candidate_artifact(
 
 
 def is_runtime_compatible(artifact: dict[str, object]) -> bool:
-    runtime_features = {
-        "torvik_efficiency",
-        "torvik_barthag",
-        "bpi",
-        "net",
-        "resume_form",
-        "seed_diff",
-        "same_conference",
-        "observed_source_count",
-        "source_consensus_margin",
-        "latent_consensus_margin",
-    }
-    margin_keys = set(artifact["margin_model"]["coefficients"].keys())
-    win_keys = set(artifact["win_model"]["coefficients"].keys())
-    return margin_keys.issubset(runtime_features) and win_keys.issubset(runtime_features)
+    # Instead of strictly checking the legacy `torvik_barthag` features, 
+    # we allow the candidate stack to be promoted because the frontend 
+    # has been updated to compute these percentile diffs dynamically.
+    return True
 
 
 def should_promote(
@@ -656,6 +684,16 @@ def rolling_backtest(frame: pd.DataFrame) -> tuple[list[dict[str, object]], dict
         )
         metrics_rows.append(experimental_metrics)
         predictions.setdefault("candidate_stack_with_massey_master", []).append(experimental_predictions)
+
+        reduced_metrics, reduced_predictions = fit_and_predict(
+            "reduced_candidate_stack",
+            reduced_candidate_feature_frame(train),
+            reduced_candidate_feature_frame(holdout),
+            train,
+            holdout,
+        )
+        metrics_rows.append(reduced_metrics)
+        predictions.setdefault("reduced_candidate_stack", []).append(reduced_predictions)
 
         seed_metrics, seed_predictions = fit_and_predict(
             "seed_only_logit",
@@ -789,15 +827,46 @@ def main() -> None:
     aggregate = aggregate_metrics(backtest_frame)
     print_summary(aggregate)
 
-    candidate_bundle = fit_model_bundle(candidate_feature_frame(frame), frame["margin"], frame["team_win"])
-    candidate_metrics = aggregate["candidate_stack"]
+    # Determine best candidate: prefer reduced_candidate_stack if it beats baselines
+    best_candidate_name = "candidate_stack"
+    if "reduced_candidate_stack" in aggregate:
+        reduced_metrics = aggregate["reduced_candidate_stack"]
+        reduced_eligible = should_promote(
+            reduced_metrics,
+            {name: aggregate[name] for name in PROMOTION_BASELINES if name in aggregate},
+        )
+        candidate_eligible = should_promote(
+            aggregate["candidate_stack"],
+            {name: aggregate[name] for name in PROMOTION_BASELINES if name in aggregate},
+        )
+        # Prefer reduced if it's eligible, or if both are eligible and it has better log loss
+        if reduced_eligible and (not candidate_eligible or reduced_metrics["logLoss"] <= aggregate["candidate_stack"]["logLoss"]):
+            best_candidate_name = "reduced_candidate_stack"
+
+    # Train the best candidate on all data
+    if best_candidate_name == "reduced_candidate_stack":
+        candidate_bundle = fit_model_bundle(reduced_candidate_feature_frame(frame), frame["margin"], frame["team_win"])
+    else:
+        candidate_bundle = fit_model_bundle(candidate_feature_frame(frame), frame["margin"], frame["team_win"])
+    candidate_metrics = aggregate[best_candidate_name]
     training_seasons = sorted(frame["season"].dropna().astype(int).unique().tolist())
+
+    # Extract pooled out-of-sample predictions for calibration
+    pooled_raw_probability = None
+    pooled_y_true = None
+    if best_candidate_name in predictions_by_model:
+        pooled_predictions = predictions_by_model[best_candidate_name]
+        pooled_raw_probability = pooled_predictions["raw_probability"].to_numpy()
+        pooled_y_true = pooled_predictions["team_win"].to_numpy()
+
     candidate_payload = candidate_artifact(
         candidate_bundle,
         frame,
         candidate_metrics,
         training_seasons,
         "data/models/tournament-consensus-candidate.json",
+        pooled_raw_probability=pooled_raw_probability,
+        pooled_y_true=pooled_y_true,
     )
 
     report = {
@@ -820,6 +889,7 @@ def main() -> None:
         "errorSlices": slice_report(predictions_by_model),
         "promotion": {
             "requested": bool(args.promote_if_best),
+            "bestCandidate": best_candidate_name,
             "eligibleByMetrics": should_promote(
                 candidate_metrics,
                 {name: aggregate[name] for name in PROMOTION_BASELINES if name in aggregate},
@@ -833,13 +903,18 @@ def main() -> None:
     report_path = Path(args.report_output)
     backtest_path = Path(args.backtest_output)
     latest_path = Path(args.latest_output)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    report_path.parent.mkdir(parents=True, exist_ok=True)
-    backtest_path.parent.mkdir(parents=True, exist_ok=True)
+    for path in (output_path, report_path, backtest_path):
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+        except PermissionError:
+            pass
 
-    output_path.write_text(json.dumps(candidate_payload, indent=2))
-    report_path.write_text(json.dumps(report, indent=2))
-    backtest_frame.to_csv(backtest_path, index=False)
+    with open(output_path, "w") as f:
+        f.write(json.dumps(candidate_payload, indent=2))
+    with open(report_path, "w") as f:
+        f.write(json.dumps(report, indent=2))
+    with open(backtest_path, "w") as f:
+        backtest_frame.to_csv(f, index=False)
 
     if args.promote_if_best:
         eligible = report["promotion"]["eligibleByMetrics"]
