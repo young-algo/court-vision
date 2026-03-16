@@ -10,6 +10,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.calibration import CalibratedClassifierCV
+from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor
 from sklearn.isotonic import IsotonicRegression
 from sklearn.linear_model import LogisticRegression, Ridge, RidgeCV
 from sklearn.metrics import brier_score_loss, log_loss, mean_absolute_error
@@ -121,6 +122,13 @@ REDUCED_CANDIDATE_FEATURES = [
 PROMOTION_BASELINES = ("equal_weight_consensus", "seed_only_logit")
 LOWER_IS_BETTER = {"logLoss", "brierScore", "marginMae", "calibrationError"}
 HIGHER_IS_BETTER = {"upsetRecall"}
+GBM_DISTILLATION_PARAMS = {
+    "n_estimators": 80,
+    "max_depth": 3,
+    "learning_rate": 0.05,
+    "random_state": 42,
+}
+DISTILLATION_BLEND = 0.7
 
 
 @dataclass
@@ -130,7 +138,10 @@ class ModelBundle:
     win_feature_names: list[str]
     scaler: StandardScaler
     margin_model: RidgeCV
-    win_model: CalibratedClassifierCV
+    win_model: CalibratedClassifierCV | None
+    win_intercept: float
+    win_coefficients: np.ndarray
+    win_calibrator: IsotonicRegression | None = None
 
 
 def numeric_frame(frame: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
@@ -201,6 +212,14 @@ def probability_to_logit(probabilities: np.ndarray) -> np.ndarray:
     return np.log(clipped / (1 - clipped))
 
 
+def fit_probability_calibrator(raw_probability: np.ndarray, y_true: pd.Series | np.ndarray) -> IsotonicRegression:
+    iso = IsotonicRegression(out_of_bounds="clip", y_min=0.02, y_max=0.98)
+    anchored_raw_probability = np.concatenate([np.asarray(raw_probability), np.array([0.5])])
+    anchored_y_true = np.concatenate([np.asarray(y_true, dtype=float), np.array([0.5])])
+    iso.fit(anchored_raw_probability, anchored_y_true)
+    return iso
+
+
 def fit_model_bundle(
     features: pd.DataFrame,
     y_margin: pd.Series,
@@ -230,6 +249,10 @@ def fit_model_bundle(
         y_win,
     )
 
+    base_estimators = [calibrator.estimator for calibrator in win_model.calibrated_classifiers_]
+    mean_win_coef = np.mean([est.coef_[0] for est in base_estimators], axis=0)
+    mean_win_intercept = float(np.mean([est.intercept_[0] for est in base_estimators]))
+
     return ModelBundle(
         feature_names=feature_names,
         margin_feature_names=margin_feature_names,
@@ -237,6 +260,63 @@ def fit_model_bundle(
         scaler=scaler,
         margin_model=margin_model,
         win_model=win_model,
+        win_intercept=mean_win_intercept,
+        win_coefficients=mean_win_coef,
+    )
+
+
+def fit_distilled_model_bundle(
+    features: pd.DataFrame,
+    y_margin: pd.Series,
+    y_win: pd.Series,
+    *,
+    win_feature_names: list[str] | None = None,
+) -> ModelBundle:
+    feature_names = list(features.columns)
+    margin_feature_names = feature_names
+    win_feature_names = win_feature_names or feature_names
+    scaler = StandardScaler()
+    scaled = scaler.fit_transform(features[feature_names])
+    feature_index = {feature: index for index, feature in enumerate(feature_names)}
+    margin_indices = [feature_index[feature] for feature in margin_feature_names]
+    win_indices = [feature_index[feature] for feature in win_feature_names]
+
+    margin_teacher = GradientBoostingRegressor(**GBM_DISTILLATION_PARAMS)
+    margin_teacher.fit(scaled[:, margin_indices], y_margin)
+    teacher_margin = margin_teacher.predict(scaled[:, margin_indices])
+    distilled_margin_target = DISTILLATION_BLEND * teacher_margin + (1 - DISTILLATION_BLEND) * y_margin.to_numpy()
+    margin_model = RidgeCV(alphas=[10.0, 100.0, 1000.0, 5000.0, 10000.0]).fit(
+        scaled[:, margin_indices],
+        distilled_margin_target,
+    )
+
+    win_teacher = GradientBoostingClassifier(**GBM_DISTILLATION_PARAMS)
+    win_teacher.fit(scaled[:, win_indices], y_win)
+    teacher_probability = np.clip(win_teacher.predict_proba(scaled[:, win_indices])[:, 1], 0.01, 0.99)
+    empirical_probability = np.clip(y_win.to_numpy() * 0.98 + 0.01, 0.01, 0.99)
+    distilled_probability_target = np.clip(
+        DISTILLATION_BLEND * teacher_probability + (1 - DISTILLATION_BLEND) * empirical_probability,
+        0.01,
+        0.99,
+    )
+    distilled_logit_target = probability_to_logit(distilled_probability_target)
+    win_student = RidgeCV(alphas=[1.0, 10.0, 100.0, 500.0, 1000.0]).fit(
+        scaled[:, win_indices],
+        distilled_logit_target,
+    )
+    raw_train_probability = sigmoid(win_student.predict(scaled[:, win_indices]))
+    win_calibrator = fit_probability_calibrator(raw_train_probability, y_win)
+
+    return ModelBundle(
+        feature_names=feature_names,
+        margin_feature_names=margin_feature_names,
+        win_feature_names=win_feature_names,
+        scaler=scaler,
+        margin_model=margin_model,
+        win_model=None,
+        win_intercept=float(win_student.intercept_),
+        win_coefficients=np.asarray(win_student.coef_, dtype=float),
+        win_calibrator=win_calibrator,
     )
 
 
@@ -247,8 +327,15 @@ def predict_bundle(bundle: ModelBundle, features: pd.DataFrame) -> tuple[np.ndar
     win_indices = [feature_index[feature] for feature in bundle.win_feature_names]
 
     predicted_margin = bundle.margin_model.predict(scaled[:, margin_indices])
-    calibrated_probability = bundle.win_model.predict_proba(scaled[:, win_indices])[:, 1]
-    raw_probability = calibrated_probability.copy()
+    if bundle.win_model is not None:
+        calibrated_probability = bundle.win_model.predict_proba(scaled[:, win_indices])[:, 1]
+        raw_probability = calibrated_probability.copy()
+    else:
+        raw_logit = scaled[:, win_indices] @ bundle.win_coefficients + bundle.win_intercept
+        raw_probability = sigmoid(raw_logit)
+        calibrated_probability = (
+            bundle.win_calibrator.predict(raw_probability) if bundle.win_calibrator is not None else raw_probability
+        )
 
     return predicted_margin, np.clip(raw_probability, 0.01, 0.99), np.clip(calibrated_probability, 0.01, 0.99)
 
@@ -402,6 +489,38 @@ def fit_and_predict(
     win_feature_names: list[str] | None = None,
 ) -> tuple[dict[str, float], pd.DataFrame]:
     bundle = fit_model_bundle(
+        train_features,
+        train["margin"],
+        train["team_win"],
+        win_feature_names=win_feature_names,
+    )
+    predicted_margin, raw_probability, calibrated_probability = predict_bundle(bundle, holdout_features)
+    metrics = metrics_for_predictions(holdout, calibrated_probability, raw_probability, predicted_margin)
+    metrics["holdoutSeason"] = int(holdout["season"].iloc[0])
+    metrics["model"] = model_name
+    if baseline_detail:
+        metrics["baselineDetail"] = baseline_detail
+    predictions = model_prediction_frame(
+        holdout,
+        model_name,
+        predicted_margin,
+        raw_probability,
+        calibrated_probability,
+        baseline_detail,
+    )
+    return metrics, predictions
+
+
+def fit_and_predict_distilled(
+    model_name: str,
+    train_features: pd.DataFrame,
+    holdout_features: pd.DataFrame,
+    train: pd.DataFrame,
+    holdout: pd.DataFrame,
+    baseline_detail: str | None = None,
+    win_feature_names: list[str] | None = None,
+) -> tuple[dict[str, float], pd.DataFrame]:
+    bundle = fit_distilled_model_bundle(
         train_features,
         train["margin"],
         train["team_win"],
@@ -592,10 +711,8 @@ def source_weights_from_candidate(bundle: ModelBundle) -> dict[str, float]:
 def candidate_feature_importance(bundle: ModelBundle) -> list[dict[str, float | str]]:
     importance = []
 
-    base_estimators = [calibrator.estimator for calibrator in bundle.win_model.calibrated_classifiers_]
-    mean_win_coef = np.mean([est.coef_[0] for est in base_estimators], axis=0)
     win_coefficients = {
-        feature: float(mean_win_coef[index])
+        feature: float(bundle.win_coefficients[index])
         for index, feature in enumerate(bundle.win_feature_names)
     }
     margin_coefficients = {
@@ -654,8 +771,6 @@ def candidate_artifact(
         _, raw_probability, _ = predict_bundle(bundle, all_features)
         y_true = frame["team_win"].to_numpy()
 
-    base_estimators = [calibrator.estimator for calibrator in bundle.win_model.calibrated_classifiers_]
-    mean_win_coef = np.mean([est.coef_[0] for est in base_estimators], axis=0)
     return {
         "id": "tournament-consensus-candidate",
         "label": "Learned Tournament Consensus Candidate",
@@ -691,9 +806,9 @@ def candidate_artifact(
             },
         },
         "win_model": {
-            "intercept": float(np.mean([c.estimator.intercept_[0] for c in bundle.win_model.calibrated_classifiers_])),
+            "intercept": float(bundle.win_intercept),
             "coefficients": {
-                feature: float(mean_win_coef[index])
+                feature: float(bundle.win_coefficients[index])
                 for index, feature in enumerate(bundle.win_feature_names)
             },
         },
@@ -758,6 +873,17 @@ def rolling_backtest(frame: pd.DataFrame) -> tuple[list[dict[str, object]], dict
         )
         metrics_rows.append(optimized_metrics)
         predictions.setdefault("optimized_candidate_stack", []).append(optimized_predictions)
+
+        distilled_metrics, distilled_predictions = fit_and_predict_distilled(
+            "gbm_distilled_candidate_stack",
+            optimized_candidate_feature_frame(train),
+            optimized_candidate_feature_frame(holdout),
+            train,
+            holdout,
+            win_feature_names=OPTIMIZED_WIN_FEATURES,
+        )
+        metrics_rows.append(distilled_metrics)
+        predictions.setdefault("gbm_distilled_candidate_stack", []).append(distilled_predictions)
 
         experimental_metrics, experimental_predictions = fit_and_predict(
             "candidate_stack_with_massey_master",
@@ -916,6 +1042,7 @@ def main() -> None:
 
     # Determine best candidate: prefer eligible stacks with the best guardrail-safe log loss.
     candidate_preference = [
+        "gbm_distilled_candidate_stack",
         "optimized_candidate_stack",
         "candidate_stack",
         "reduced_candidate_stack",
@@ -937,7 +1064,14 @@ def main() -> None:
         best_candidate_name = min(available_candidates, key=lambda name: aggregate[name]["logLoss"])
 
     # Train the best candidate on all data
-    if best_candidate_name == "optimized_candidate_stack":
+    if best_candidate_name == "gbm_distilled_candidate_stack":
+        candidate_bundle = fit_distilled_model_bundle(
+            optimized_candidate_feature_frame(frame),
+            frame["margin"],
+            frame["team_win"],
+            win_feature_names=OPTIMIZED_WIN_FEATURES,
+        )
+    elif best_candidate_name == "optimized_candidate_stack":
         candidate_bundle = fit_model_bundle(
             optimized_candidate_feature_frame(frame),
             frame["margin"],

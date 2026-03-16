@@ -333,6 +333,7 @@ class TrainingPipelineTests(unittest.TestCase):
             report = json.loads(report_path.read_text())
             self.assertIn("candidate_stack", report["aggregateMetrics"])
             self.assertIn("optimized_candidate_stack", report["aggregateMetrics"])
+            self.assertIn("gbm_distilled_candidate_stack", report["aggregateMetrics"])
             self.assertIn("seed_only_logit", report["aggregateMetrics"])
             self.assertIn("equal_weight_consensus", report["aggregateMetrics"])
             self.assertIn("promotion", report)
