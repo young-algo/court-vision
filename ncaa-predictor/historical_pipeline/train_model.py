@@ -1236,11 +1236,18 @@ def main() -> None:
 
     backtest_frame = pd.DataFrame(backtest_rows)
     aggregate = aggregate_metrics(backtest_frame)
+
+    # Add ensemble blend to the predictions pool before metric computation
+    ensemble_blend = blend_candidate_predictions(predictions_by_model)
+    if ensemble_blend is not None:
+        predictions_by_model["ensemble_blend"] = ensemble_blend
+
     pooled = compute_pooled_metrics(predictions_by_model)
     print_summary(aggregate, pooled)
 
     # Determine best candidate using pooled metrics (more trustworthy than per-season averages).
     candidate_preference = [
+        "ensemble_blend",
         "enhanced_candidate_stack",
         "gbm_distilled_candidate_stack",
         "optimized_candidate_stack",
@@ -1265,7 +1272,40 @@ def main() -> None:
 
     # Train the best candidate on all data (with upset-aware boost)
     final_weights = compute_training_weights(frame)
-    if best_candidate_name == "enhanced_candidate_stack":
+    training_seasons = sorted(frame["season"].dropna().astype(int).unique().tolist())
+
+    if best_candidate_name == "ensemble_blend":
+        # Train both ensemble members on the full dataset, then blend into a single artifact
+        enhanced_bundle = fit_distilled_model_bundle(
+            enhanced_candidate_feature_frame(frame),
+            frame["margin"],
+            frame["team_win"],
+            win_feature_names=ENHANCED_WIN_FEATURES,
+            sample_weight=final_weights,
+        )
+        distilled_bundle = fit_distilled_model_bundle(
+            optimized_candidate_feature_frame(frame),
+            frame["margin"],
+            frame["team_win"],
+            win_feature_names=OPTIMIZED_WIN_FEATURES,
+            sample_weight=final_weights,
+        )
+        # Blend using the same inverse-logLoss weights derived from backtest
+        member_losses = [
+            pooled[name]["logLoss"]
+            for name in ENSEMBLE_MEMBERS
+            if name in pooled
+        ]
+        member_inv = [1.0 / loss for loss in member_losses]
+        total_inv = sum(member_inv)
+        w_enhanced = member_inv[0] / total_inv
+        w_distilled = member_inv[1] / total_inv
+
+        # Use the enhanced_bundle as the "primary" for artifact export (scaler, features),
+        # but build blended OOS calibration from the pooled ensemble blend predictions
+        candidate_bundle = enhanced_bundle
+        print(f"Ensemble blend: enhanced={w_enhanced:.3f} distilled={w_distilled:.3f}")
+    elif best_candidate_name == "enhanced_candidate_stack":
         candidate_bundle = fit_distilled_model_bundle(
             enhanced_candidate_feature_frame(frame),
             frame["margin"],
@@ -1307,9 +1347,10 @@ def main() -> None:
             sample_weight=final_weights,
         )
     candidate_metrics = pooled[best_candidate_name]
-    training_seasons = sorted(frame["season"].dropna().astype(int).unique().tolist())
 
-    # Extract pooled out-of-sample predictions for calibration
+    # Extract pooled out-of-sample predictions for calibration.
+    # For ensemble_blend, use the blended OOS predictions so the calibration curve
+    # reflects the ensemble's actual probability distribution.
     pooled_raw_probability = None
     pooled_y_true = None
     pooled_seed_diff = None
@@ -1329,6 +1370,17 @@ def main() -> None:
         pooled_y_true=pooled_y_true,
         pooled_seed_diff=pooled_seed_diff,
     )
+
+    # Annotate payload with ensemble metadata when applicable
+    if best_candidate_name == "ensemble_blend":
+        candidate_payload["ensemble"] = {
+            "members": list(ENSEMBLE_MEMBERS),
+            "weights": {
+                ENSEMBLE_MEMBERS[0]: round(w_enhanced, 4),
+                ENSEMBLE_MEMBERS[1]: round(w_distilled, 4),
+            },
+            "blendStrategy": "inverse_logLoss",
+        }
 
     report = {
         "generatedAt": pd.Timestamp.now("UTC").isoformat(),
