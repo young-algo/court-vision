@@ -26,6 +26,7 @@ export interface LearnedTournamentArtifact {
   };
   calibration: {
     anchors: Array<{ raw: number; calibrated: number }>;
+    seedGapAnchors?: Array<{ raw: number; calibrated: number }>;
   };
   metrics: ModelRun["metrics"];
   artifact_path: string;

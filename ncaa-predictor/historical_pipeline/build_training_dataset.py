@@ -5,6 +5,7 @@ from difflib import SequenceMatcher
 from pathlib import Path
 import re
 
+import numpy as np
 import pandas as pd
 
 from .common import PROCESSED_ROOT, ensure_dirs, slugify_team
@@ -45,6 +46,14 @@ LEGACY_SUMMARY_FIELDS = [
     "legacy_net_rank",
     "legacy_massey_value",
 ]
+ROUND_ORDINAL_MAP = {
+    "round_of_64": 1,
+    "round_of_32": 2,
+    "sweet_16": 3,
+    "elite_8": 4,
+    "final_four": 5,
+    "championship": 6,
+}
 
 
 def normalize_name(name: object) -> str:
@@ -313,6 +322,44 @@ def apply_semantic_features(features: pd.DataFrame) -> pd.DataFrame:
     enriched["legacy_source_coverage_count"] = (
         enriched[[f"team_{field}" for field in LEGACY_SUMMARY_FIELDS]].notna().sum(axis=1)
     )
+
+    # --- Round-aware features (Step 2) ---
+    if "round" in enriched.columns:
+        enriched["tournament_round_ordinal"] = enriched["round"].map(ROUND_ORDINAL_MAP).fillna(1).astype(float)
+    else:
+        enriched["tournament_round_ordinal"] = 1.0
+    enriched["round_seed_interaction"] = (
+        enriched["tournament_round_ordinal"] * enriched["seed_diff"].abs()
+    ).astype(float)
+    enriched["round_kenpom_interaction"] = (
+        enriched["tournament_round_ordinal"] * enriched["kenpom_badj_em_power_diff"]
+    ).where(enriched["missing_kenpom_badj_em"] == 0, 0.0)
+
+    # --- Seed nonlinearity features (Step 4) ---
+    enriched["seed_diff_squared"] = (enriched["seed_diff"] ** 2).astype(float)
+    enriched["log_abs_seed_diff"] = np.log1p(enriched["seed_diff"].abs()).astype(float)
+
+    # --- Rating disagreement features (Step 3) ---
+    power_diff_columns = []
+    for col_name in [
+        "kenpom_badj_em_power_diff",
+        "evanmiya_relative_rating_power_diff",
+        "bpi_rank_percentile_diff",
+        "massey_ordinal_rank_percentile_diff",
+    ]:
+        missing_col = f"missing_{col_name.removesuffix('_power_diff').removesuffix('_percentile_diff')}"
+        if missing_col in enriched.columns:
+            power_diff_columns.append(
+                enriched[col_name].where(enriched[missing_col] == 0, np.nan)
+            )
+        else:
+            power_diff_columns.append(enriched[col_name])
+    diff_frame = pd.concat(power_diff_columns, axis=1)
+    enriched["rating_disagreement"] = diff_frame.std(axis=1, skipna=True).fillna(0.0)
+    enriched["max_min_rating_spread"] = (
+        diff_frame.max(axis=1, skipna=True) - diff_frame.min(axis=1, skipna=True)
+    ).fillna(0.0)
+
     return enriched
 
 

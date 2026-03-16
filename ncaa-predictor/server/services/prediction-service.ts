@@ -344,6 +344,7 @@ export class PredictionService {
     date: string,
     venue: Venue,
     season = this.modelRun.season,
+    tournamentRound = 0,
   ) {
     const teamA = this.requireTeam(teamAId);
     const teamB = this.requireTeam(teamBId);
@@ -390,6 +391,7 @@ export class PredictionService {
           snapshotB,
           teamA,
           teamB,
+          tournamentRound,
         )
       : sourceConsensusMargin * 0.72 + latentConsensusMargin * 0.28;
     const disagreementIndex = standardDeviation(
@@ -415,6 +417,7 @@ export class PredictionService {
       snapshotB,
       teamA,
       teamB,
+      tournamentRound,
     );
     const winProbabilityB = 1 - winProbabilityA;
     const bandRadius =
@@ -525,8 +528,8 @@ export class PredictionService {
         this.simulateRegion(region, field, counters, rng),
       );
 
-      const semiOne = this.simulateNeutralGame(regionalChampions[0], regionalChampions[1], rng);
-      const semiTwo = this.simulateNeutralGame(regionalChampions[2], regionalChampions[3], rng);
+      const semiOne = this.simulateNeutralGame(regionalChampions[0], regionalChampions[1], rng, 5);
+      const semiTwo = this.simulateNeutralGame(regionalChampions[2], regionalChampions[3], rng, 5);
       counters.get(semiOne)!.championship += 1;
       counters.get(semiTwo)!.championship += 1;
 
@@ -534,7 +537,7 @@ export class PredictionService {
       const matchupKey = [...finalists].sort().join("::");
       finalsCounter.set(matchupKey, (finalsCounter.get(matchupKey) ?? 0) + 1);
 
-      const champion = this.simulateNeutralGame(semiOne, semiTwo, rng);
+      const champion = this.simulateNeutralGame(semiOne, semiTwo, rng, 6);
       counters.get(champion)!.champion += 1;
     }
 
@@ -757,36 +760,38 @@ export class PredictionService {
     const roundOf64Winners = ROUND_ONE_PAIRINGS.map(([seedA, seedB]) => {
       const teamAId = regionEntries.find((entry) => entry.seed === seedA)!.teamId;
       const teamBId = regionEntries.find((entry) => entry.seed === seedB)!.teamId;
-      const winner = this.simulateNeutralGame(teamAId, teamBId, rng);
+      const winner = this.simulateNeutralGame(teamAId, teamBId, rng, 1);
       counters.get(winner)!.roundOf32 += 1;
       return winner;
     });
 
     const sweet16Winners = [
-      this.simulateNeutralGame(roundOf64Winners[0], roundOf64Winners[1], rng),
-      this.simulateNeutralGame(roundOf64Winners[2], roundOf64Winners[3], rng),
-      this.simulateNeutralGame(roundOf64Winners[4], roundOf64Winners[5], rng),
-      this.simulateNeutralGame(roundOf64Winners[6], roundOf64Winners[7], rng),
+      this.simulateNeutralGame(roundOf64Winners[0], roundOf64Winners[1], rng, 2),
+      this.simulateNeutralGame(roundOf64Winners[2], roundOf64Winners[3], rng, 2),
+      this.simulateNeutralGame(roundOf64Winners[4], roundOf64Winners[5], rng, 2),
+      this.simulateNeutralGame(roundOf64Winners[6], roundOf64Winners[7], rng, 2),
     ];
     sweet16Winners.forEach((winner) => counters.get(winner)!.sweet16 += 1);
 
     const elite8Winners = [
-      this.simulateNeutralGame(sweet16Winners[0], sweet16Winners[1], rng),
-      this.simulateNeutralGame(sweet16Winners[2], sweet16Winners[3], rng),
+      this.simulateNeutralGame(sweet16Winners[0], sweet16Winners[1], rng, 3),
+      this.simulateNeutralGame(sweet16Winners[2], sweet16Winners[3], rng, 3),
     ];
     elite8Winners.forEach((winner) => counters.get(winner)!.elite8 += 1);
 
-    const regionChampion = this.simulateNeutralGame(elite8Winners[0], elite8Winners[1], rng);
+    const regionChampion = this.simulateNeutralGame(elite8Winners[0], elite8Winners[1], rng, 4);
     counters.get(regionChampion)!.finalFour += 1;
     return regionChampion;
   }
 
-  private simulateNeutralGame(teamAId: string, teamBId: string, rng: () => number) {
+  private simulateNeutralGame(teamAId: string, teamBId: string, rng: () => number, tournamentRound = 0) {
     const result = this.predictMatchup(
       teamAId,
       teamBId,
       this.modelRun.generatedAt.slice(0, 10),
       "neutral",
+      this.modelRun.season,
+      tournamentRound,
     );
     return rng() <= result.prediction.winProbabilityA ? teamAId : teamBId;
   }
@@ -1005,6 +1010,7 @@ export class PredictionService {
     snapshotB?: TeamRatingSnapshot,
     teamA?: Team,
     teamB?: Team,
+    tournamentRound = 0,
   ) {
     if (!this.learnedArtifact) {
       return sourceConsensusMargin * 0.72 + latentConsensusMargin * 0.28;
@@ -1020,6 +1026,7 @@ export class PredictionService {
       snapshotB,
       teamA,
       teamB,
+      tournamentRound,
     );
 
     const scaledFeature = (key: string, value: number) => {
@@ -1046,6 +1053,7 @@ export class PredictionService {
     snapshotB?: TeamRatingSnapshot,
     teamA?: Team,
     teamB?: Team,
+    tournamentRound = 0,
   ) {
     const learnedProbability = this.learnedProbability(
       components,
@@ -1056,11 +1064,20 @@ export class PredictionService {
       snapshotB,
       teamA,
       teamB,
+      tournamentRound,
     );
-    const isotonic = interpolateCalibration(
-      learnedProbability,
-      this.learnedArtifact?.calibration.anchors ?? CALIBRATION_ANCHORS,
-    );
+    const generalAnchors = this.learnedArtifact?.calibration.anchors ?? CALIBRATION_ANCHORS;
+    const seedGapAnchors = this.learnedArtifact?.calibration.seedGapAnchors;
+    const generalCalibrated = interpolateCalibration(learnedProbability, generalAnchors);
+
+    let isotonic = generalCalibrated;
+    if (seedGapAnchors && seedGapAnchors.length > 0 && Math.abs(seedDiff) >= 5) {
+      const seedGapCalibrated = interpolateCalibration(learnedProbability, seedGapAnchors);
+      // Blend: fully seed-gap-specific at gap=10+, 50/50 at gap=5
+      const blendWeight = clamp((Math.abs(seedDiff) - 5) / 5, 0, 1);
+      isotonic = generalCalibrated * (1 - blendWeight) + seedGapCalibrated * blendWeight;
+    }
+
     const observedShare = observedSourceCount / sourceCount;
     const shrink = clamp(0.97 - disagreementIndex * 0.005 - (1 - observedShare) * 0.04, 0.85, 0.97);
     return clamp(0.5 + (isotonic - 0.5) * shrink, 0.01, 0.99);
@@ -1075,6 +1092,7 @@ export class PredictionService {
     snapshotB?: TeamRatingSnapshot,
     teamA?: Team,
     teamB?: Team,
+    tournamentRound = 0,
   ) {
     if (!this.learnedArtifact) {
       return rawProbability;
@@ -1090,6 +1108,7 @@ export class PredictionService {
       snapshotB,
       teamA,
       teamB,
+      tournamentRound,
     );
     const scaledFeature = (key: string, value: number) => {
       const mean = this.learnedArtifact!.scaler.means[key] ?? 0;
@@ -1114,6 +1133,7 @@ export class PredictionService {
     snapshotB?: TeamRatingSnapshot,
     teamA?: Team,
     teamB?: Team,
+    tournamentRound = 0,
   ) {
     const featureMap: Record<string, number> = {
       source_consensus_margin: sourceConsensusMargin,
@@ -1169,6 +1189,32 @@ export class PredictionService {
 
       featureMap["seed_kenpom_interaction"] = seedDiff * kenpomDiff;
       featureMap["abs_seed_same_conference_interaction"] = Math.abs(seedDiff) * sameConference;
+
+      // Round-aware features (use round ordinal if in tournament context, else 1)
+      const roundOrdinal = tournamentRound > 0 ? tournamentRound : 1;
+      featureMap["round_seed_interaction"] = roundOrdinal * Math.abs(seedDiff);
+      featureMap["round_kenpom_interaction"] = roundOrdinal * kenpomDiff;
+
+      // Seed nonlinearity features
+      featureMap["seed_diff_squared"] = seedDiff * seedDiff;
+      featureMap["log_abs_seed_diff"] = Math.log1p(Math.abs(seedDiff));
+
+      // Rating disagreement features
+      const availableDiffs: number[] = [];
+      if (!missingBpi) availableDiffs.push(featureMap["bpi_rank_percentile_diff"]);
+      if (!missingNet) availableDiffs.push(featureMap["net_rank_percentile_diff"]);
+      if (!missingMassey) availableDiffs.push(featureMap["massey_ordinal_rank_percentile_diff"]);
+      if (featureMap["missing_kenpom_badj_em"] === 0) availableDiffs.push(kenpomDiff);
+      if (missingEvanMiya === 0) availableDiffs.push(featureMap["evanmiya_relative_rating_power_diff"]);
+      if (availableDiffs.length > 1) {
+        const diffMean = availableDiffs.reduce((s, v) => s + v, 0) / availableDiffs.length;
+        const diffVar = availableDiffs.reduce((s, v) => s + (v - diffMean) ** 2, 0) / availableDiffs.length;
+        featureMap["rating_disagreement"] = Math.sqrt(diffVar);
+        featureMap["max_min_rating_spread"] = Math.max(...availableDiffs) - Math.min(...availableDiffs);
+      } else {
+        featureMap["rating_disagreement"] = 0;
+        featureMap["max_min_rating_spread"] = 0;
+      }
 
       featureMap["missing_resume_rank_blend"] = 0;
       // NOTE: semantic divergence from Python training pipeline.

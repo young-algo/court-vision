@@ -84,10 +84,25 @@ OPTIMIZED_CANDIDATE_CONTEXT_FEATURES = [
     "seed_kenpom_interaction",
     "abs_seed_same_conference_interaction",
 ]
+NEW_CONTEXT_FEATURES = [
+    "round_seed_interaction",
+    "round_kenpom_interaction",
+    "seed_diff_squared",
+    "log_abs_seed_diff",
+    "rating_disagreement",
+    "max_min_rating_spread",
+]
 OPTIMIZED_CANDIDATE_FEATURES = [
     *OPTIMIZED_CANDIDATE_SIGNAL_FEATURES,
     *OPTIMIZED_CANDIDATE_CONTEXT_FEATURES,
     *OPTIMIZED_CANDIDATE_MISSING_FEATURES,
+]
+ENHANCED_CANDIDATE_FEATURES = [
+    *OPTIMIZED_CANDIDATE_FEATURES,
+    *NEW_CONTEXT_FEATURES,
+]
+ENHANCED_WIN_FEATURES = [
+    feature for feature in ENHANCED_CANDIDATE_FEATURES if feature != "seed_diff"
 ]
 OPTIMIZED_WIN_FEATURES = [
     feature for feature in OPTIMIZED_CANDIDATE_FEATURES if feature != "seed_diff"
@@ -129,6 +144,7 @@ GBM_DISTILLATION_PARAMS = {
     "random_state": 42,
 }
 DISTILLATION_BLEND = 0.7
+TEMPORAL_DECAY = 0.90
 
 
 @dataclass
@@ -167,6 +183,10 @@ def experimental_candidate_feature_frame(frame: pd.DataFrame) -> pd.DataFrame:
 
 def optimized_candidate_feature_frame(frame: pd.DataFrame) -> pd.DataFrame:
     return numeric_frame(frame, OPTIMIZED_CANDIDATE_FEATURES)[OPTIMIZED_CANDIDATE_FEATURES]
+
+
+def enhanced_candidate_feature_frame(frame: pd.DataFrame) -> pd.DataFrame:
+    return numeric_frame(frame, ENHANCED_CANDIDATE_FEATURES)[ENHANCED_CANDIDATE_FEATURES]
 
 
 def reduced_candidate_feature_frame(frame: pd.DataFrame) -> pd.DataFrame:
@@ -214,9 +234,16 @@ def probability_to_logit(probabilities: np.ndarray) -> np.ndarray:
 
 def fit_probability_calibrator(raw_probability: np.ndarray, y_true: pd.Series | np.ndarray) -> IsotonicRegression:
     iso = IsotonicRegression(out_of_bounds="clip", y_min=0.02, y_max=0.98)
-    anchored_raw_probability = np.concatenate([np.asarray(raw_probability), np.array([0.5])])
-    anchored_y_true = np.concatenate([np.asarray(y_true, dtype=float), np.array([0.5])])
-    iso.fit(anchored_raw_probability, anchored_y_true)
+    diagonal_raw = np.arange(0.1, 1.0, 0.1)
+    diagonal_true = diagonal_raw.copy()
+    anchored_raw_probability = np.concatenate([np.asarray(raw_probability), np.array([0.5]), diagonal_raw])
+    anchored_y_true = np.concatenate([np.asarray(y_true, dtype=float), np.array([0.5]), diagonal_true])
+    weights = np.concatenate([
+        np.ones(len(raw_probability)),
+        np.array([1.0]),
+        np.full(len(diagonal_raw), 0.3),
+    ])
+    iso.fit(anchored_raw_probability, anchored_y_true, sample_weight=weights)
     return iso
 
 
@@ -226,6 +253,7 @@ def fit_model_bundle(
     y_win: pd.Series,
     *,
     win_feature_names: list[str] | None = None,
+    sample_weight: np.ndarray | None = None,
 ) -> ModelBundle:
     feature_names = list(features.columns)
     margin_feature_names = feature_names
@@ -239,6 +267,7 @@ def fit_model_bundle(
     margin_model = RidgeCV(alphas=[10.0, 100.0, 1000.0, 5000.0, 10000.0]).fit(
         scaled[:, margin_indices],
         y_margin,
+        sample_weight=sample_weight,
     )
 
     class_counts = pd.Series(y_win).value_counts()
@@ -247,6 +276,7 @@ def fit_model_bundle(
     win_model = CalibratedClassifierCV(base_win_model, cv=cv_folds, method="isotonic").fit(
         scaled[:, win_indices],
         y_win,
+        sample_weight=sample_weight,
     )
 
     base_estimators = [calibrator.estimator for calibrator in win_model.calibrated_classifiers_]
@@ -271,6 +301,7 @@ def fit_distilled_model_bundle(
     y_win: pd.Series,
     *,
     win_feature_names: list[str] | None = None,
+    sample_weight: np.ndarray | None = None,
 ) -> ModelBundle:
     feature_names = list(features.columns)
     margin_feature_names = feature_names
@@ -282,16 +313,17 @@ def fit_distilled_model_bundle(
     win_indices = [feature_index[feature] for feature in win_feature_names]
 
     margin_teacher = GradientBoostingRegressor(**GBM_DISTILLATION_PARAMS)
-    margin_teacher.fit(scaled[:, margin_indices], y_margin)
+    margin_teacher.fit(scaled[:, margin_indices], y_margin, sample_weight=sample_weight)
     teacher_margin = margin_teacher.predict(scaled[:, margin_indices])
     distilled_margin_target = DISTILLATION_BLEND * teacher_margin + (1 - DISTILLATION_BLEND) * y_margin.to_numpy()
     margin_model = RidgeCV(alphas=[10.0, 100.0, 1000.0, 5000.0, 10000.0]).fit(
         scaled[:, margin_indices],
         distilled_margin_target,
+        sample_weight=sample_weight,
     )
 
     win_teacher = GradientBoostingClassifier(**GBM_DISTILLATION_PARAMS)
-    win_teacher.fit(scaled[:, win_indices], y_win)
+    win_teacher.fit(scaled[:, win_indices], y_win, sample_weight=sample_weight)
     teacher_probability = np.clip(win_teacher.predict_proba(scaled[:, win_indices])[:, 1], 0.01, 0.99)
     empirical_probability = np.clip(y_win.to_numpy() * 0.98 + 0.01, 0.01, 0.99)
     distilled_probability_target = np.clip(
@@ -303,6 +335,7 @@ def fit_distilled_model_bundle(
     win_student = RidgeCV(alphas=[1.0, 10.0, 100.0, 500.0, 1000.0]).fit(
         scaled[:, win_indices],
         distilled_logit_target,
+        sample_weight=sample_weight,
     )
     raw_train_probability = sigmoid(win_student.predict(scaled[:, win_indices]))
     win_calibrator = fit_probability_calibrator(raw_train_probability, y_win)
@@ -479,6 +512,11 @@ def model_prediction_frame(
     )
 
 
+def compute_temporal_weights(seasons: pd.Series, decay: float = TEMPORAL_DECAY) -> np.ndarray:
+    max_season = int(seasons.max())
+    return np.array([decay ** (max_season - int(s)) for s in seasons])
+
+
 def fit_and_predict(
     model_name: str,
     train_features: pd.DataFrame,
@@ -488,11 +526,13 @@ def fit_and_predict(
     baseline_detail: str | None = None,
     win_feature_names: list[str] | None = None,
 ) -> tuple[dict[str, float], pd.DataFrame]:
+    temporal_weights = compute_temporal_weights(train["season"])
     bundle = fit_model_bundle(
         train_features,
         train["margin"],
         train["team_win"],
         win_feature_names=win_feature_names,
+        sample_weight=temporal_weights,
     )
     predicted_margin, raw_probability, calibrated_probability = predict_bundle(bundle, holdout_features)
     metrics = metrics_for_predictions(holdout, calibrated_probability, raw_probability, predicted_margin)
@@ -520,11 +560,13 @@ def fit_and_predict_distilled(
     baseline_detail: str | None = None,
     win_feature_names: list[str] | None = None,
 ) -> tuple[dict[str, float], pd.DataFrame]:
+    temporal_weights = compute_temporal_weights(train["season"])
     bundle = fit_distilled_model_bundle(
         train_features,
         train["margin"],
         train["team_win"],
         win_feature_names=win_feature_names,
+        sample_weight=temporal_weights,
     )
     predicted_margin, raw_probability, calibrated_probability = predict_bundle(bundle, holdout_features)
     metrics = metrics_for_predictions(holdout, calibrated_probability, raw_probability, predicted_margin)
@@ -738,12 +780,58 @@ def calibration_anchor_rows(
     raw_probability: np.ndarray,
     y_true: np.ndarray,
 ) -> list[dict[str, float]]:
+    diagonal_raw = np.arange(0.1, 1.0, 0.1)
+    diagonal_true = diagonal_raw.copy()
+    diagonal_weight = 0.3
+
     iso = IsotonicRegression(out_of_bounds="clip", y_min=0.02, y_max=0.98)
-    anchored_raw_probability = np.concatenate([raw_probability, np.array([0.5])])
-    anchored_y_true = np.concatenate([y_true, np.array([0.5])])
-    iso.fit(anchored_raw_probability, anchored_y_true)
+    anchored_raw = np.concatenate([raw_probability, np.array([0.5]), diagonal_raw])
+    anchored_true = np.concatenate([y_true, np.array([0.5]), diagonal_true])
+    weights = np.concatenate([
+        np.ones(len(raw_probability)),
+        np.array([1.0]),
+        np.full(len(diagonal_raw), diagonal_weight),
+    ])
+    iso.fit(anchored_raw, anchored_true, sample_weight=weights)
     quantiles = [0.05, 0.15, 0.25, 0.5, 0.75, 0.9]
     raw_values = np.unique(np.append(np.quantile(raw_probability, quantiles), 0.5))
+    calibrated_values = iso.predict(raw_values)
+    return [
+        {
+            "raw": float(r),
+            "calibrated": 0.5 if math.isclose(float(r), 0.5, abs_tol=1e-9) else float(c),
+        }
+        for r, c in zip(raw_values, calibrated_values)
+    ]
+
+
+def seed_gap_calibration_anchor_rows(
+    raw_probability: np.ndarray,
+    y_true: np.ndarray,
+    seed_diff: np.ndarray,
+    gap_threshold: int = 5,
+) -> list[dict[str, float]]:
+    mask = np.abs(seed_diff) >= gap_threshold
+    if mask.sum() < 20:
+        return []
+    gap_raw = raw_probability[mask]
+    gap_true = y_true[mask]
+
+    diagonal_raw = np.arange(0.1, 1.0, 0.1)
+    diagonal_true = diagonal_raw.copy()
+    diagonal_weight = 0.5
+
+    iso = IsotonicRegression(out_of_bounds="clip", y_min=0.02, y_max=0.98)
+    anchored_raw = np.concatenate([gap_raw, np.array([0.5]), diagonal_raw])
+    anchored_true = np.concatenate([gap_true, np.array([0.5]), diagonal_true])
+    weights = np.concatenate([
+        np.ones(len(gap_raw)),
+        np.array([1.0]),
+        np.full(len(diagonal_raw), diagonal_weight),
+    ])
+    iso.fit(anchored_raw, anchored_true, sample_weight=weights)
+    quantiles = [0.05, 0.15, 0.25, 0.5, 0.75, 0.9]
+    raw_values = np.unique(np.append(np.quantile(gap_raw, quantiles), 0.5))
     calibrated_values = iso.predict(raw_values)
     return [
         {
@@ -762,14 +850,17 @@ def candidate_artifact(
     artifact_path: str,
     pooled_raw_probability: np.ndarray | None = None,
     pooled_y_true: np.ndarray | None = None,
+    pooled_seed_diff: np.ndarray | None = None,
 ) -> dict[str, object]:
     if pooled_raw_probability is not None and pooled_y_true is not None:
         raw_probability = pooled_raw_probability
         y_true = pooled_y_true
+        seed_diff = pooled_seed_diff if pooled_seed_diff is not None else np.zeros(len(y_true))
     else:
         all_features = numeric_frame(frame, bundle.feature_names)[bundle.feature_names]
         _, raw_probability, _ = predict_bundle(bundle, all_features)
         y_true = frame["team_win"].to_numpy()
+        seed_diff = frame["seed_diff"].to_numpy()
 
     return {
         "id": "tournament-consensus-candidate",
@@ -812,7 +903,10 @@ def candidate_artifact(
                 for index, feature in enumerate(bundle.win_feature_names)
             },
         },
-        "calibration": {"anchors": calibration_anchor_rows(raw_probability, y_true)},
+        "calibration": {
+            "anchors": calibration_anchor_rows(raw_probability, y_true),
+            "seedGapAnchors": seed_gap_calibration_anchor_rows(raw_probability, y_true, seed_diff),
+        },
         "metrics": aggregate_metrics,
         "artifact_path": artifact_path,
         "notes": "Training-only candidate artifact built from source-native feature semantics. Not promoted by default.",
@@ -884,6 +978,17 @@ def rolling_backtest(frame: pd.DataFrame) -> tuple[list[dict[str, object]], dict
         )
         metrics_rows.append(distilled_metrics)
         predictions.setdefault("gbm_distilled_candidate_stack", []).append(distilled_predictions)
+
+        enhanced_metrics, enhanced_predictions = fit_and_predict_distilled(
+            "enhanced_candidate_stack",
+            enhanced_candidate_feature_frame(train),
+            enhanced_candidate_feature_frame(holdout),
+            train,
+            holdout,
+            win_feature_names=ENHANCED_WIN_FEATURES,
+        )
+        metrics_rows.append(enhanced_metrics)
+        predictions.setdefault("enhanced_candidate_stack", []).append(enhanced_predictions)
 
         experimental_metrics, experimental_predictions = fit_and_predict(
             "candidate_stack_with_massey_master",
@@ -988,13 +1093,37 @@ def aggregate_metrics(backtest_rows: pd.DataFrame) -> dict[str, dict[str, float]
     return aggregates
 
 
-def print_summary(aggregates: dict[str, dict[str, float]]) -> None:
+def compute_pooled_metrics(predictions_by_model: dict[str, pd.DataFrame]) -> dict[str, dict[str, float]]:
+    pooled: dict[str, dict[str, float]] = {}
+    for model_name, predictions in predictions_by_model.items():
+        pooled[model_name] = metrics_for_predictions(
+            predictions,
+            predictions["probability"].to_numpy(),
+            predictions["raw_probability"].to_numpy(),
+            predictions["predicted_margin"].to_numpy(),
+        )
+    return pooled
+
+
+def print_summary(
+    aggregates: dict[str, dict[str, float]],
+    pooled: dict[str, dict[str, float]] | None = None,
+) -> None:
+    print("=== Per-Season Averaged Metrics ===")
     summary = (
         pd.DataFrame.from_dict(aggregates, orient="index")
         .sort_values(["logLoss", "brierScore", "marginMae"])
         .round(4)
     )
     print(summary.to_string())
+    if pooled:
+        print("\n=== Pooled Metrics (all holdout games) ===")
+        pooled_summary = (
+            pd.DataFrame.from_dict(pooled, orient="index")
+            .sort_values(["logLoss", "brierScore", "marginMae"])
+            .round(4)
+        )
+        print(pooled_summary.to_string())
 
 
 def main() -> None:
@@ -1016,6 +1145,7 @@ def main() -> None:
         [
             *CANDIDATE_FEATURES,
             *OPTIMIZED_CANDIDATE_FEATURES,
+            *ENHANCED_CANDIDATE_FEATURES,
             "margin",
             "team_win",
             "seed_diff",
@@ -1038,10 +1168,12 @@ def main() -> None:
 
     backtest_frame = pd.DataFrame(backtest_rows)
     aggregate = aggregate_metrics(backtest_frame)
-    print_summary(aggregate)
+    pooled = compute_pooled_metrics(predictions_by_model)
+    print_summary(aggregate, pooled)
 
-    # Determine best candidate: prefer eligible stacks with the best guardrail-safe log loss.
+    # Determine best candidate using pooled metrics (more trustworthy than per-season averages).
     candidate_preference = [
+        "enhanced_candidate_stack",
         "gbm_distilled_candidate_stack",
         "optimized_candidate_stack",
         "candidate_stack",
@@ -1051,25 +1183,35 @@ def main() -> None:
     eligible_candidates = [
         name
         for name in candidate_preference
-        if name in aggregate
+        if name in pooled
         and should_promote(
-            aggregate[name],
-            {baseline: aggregate[baseline] for baseline in PROMOTION_BASELINES if baseline in aggregate},
+            pooled[name],
+            {baseline: pooled[baseline] for baseline in PROMOTION_BASELINES if baseline in pooled},
         )
     ]
     if eligible_candidates:
-        best_candidate_name = min(eligible_candidates, key=lambda name: aggregate[name]["logLoss"])
+        best_candidate_name = min(eligible_candidates, key=lambda name: pooled[name]["logLoss"])
     else:
-        available_candidates = [name for name in candidate_preference if name in aggregate]
-        best_candidate_name = min(available_candidates, key=lambda name: aggregate[name]["logLoss"])
+        available_candidates = [name for name in candidate_preference if name in pooled]
+        best_candidate_name = min(available_candidates, key=lambda name: pooled[name]["logLoss"])
 
     # Train the best candidate on all data
-    if best_candidate_name == "gbm_distilled_candidate_stack":
+    final_weights = compute_temporal_weights(frame["season"])
+    if best_candidate_name == "enhanced_candidate_stack":
+        candidate_bundle = fit_distilled_model_bundle(
+            enhanced_candidate_feature_frame(frame),
+            frame["margin"],
+            frame["team_win"],
+            win_feature_names=ENHANCED_WIN_FEATURES,
+            sample_weight=final_weights,
+        )
+    elif best_candidate_name == "gbm_distilled_candidate_stack":
         candidate_bundle = fit_distilled_model_bundle(
             optimized_candidate_feature_frame(frame),
             frame["margin"],
             frame["team_win"],
             win_feature_names=OPTIMIZED_WIN_FEATURES,
+            sample_weight=final_weights,
         )
     elif best_candidate_name == "optimized_candidate_stack":
         candidate_bundle = fit_model_bundle(
@@ -1077,27 +1219,37 @@ def main() -> None:
             frame["margin"],
             frame["team_win"],
             win_feature_names=OPTIMIZED_WIN_FEATURES,
+            sample_weight=final_weights,
         )
     elif best_candidate_name == "reduced_candidate_stack":
-        candidate_bundle = fit_model_bundle(reduced_candidate_feature_frame(frame), frame["margin"], frame["team_win"])
+        candidate_bundle = fit_model_bundle(
+            reduced_candidate_feature_frame(frame), frame["margin"], frame["team_win"],
+            sample_weight=final_weights,
+        )
     elif best_candidate_name == "candidate_stack_with_massey_master":
         candidate_bundle = fit_model_bundle(
             experimental_candidate_feature_frame(frame),
             frame["margin"],
             frame["team_win"],
+            sample_weight=final_weights,
         )
     else:
-        candidate_bundle = fit_model_bundle(candidate_feature_frame(frame), frame["margin"], frame["team_win"])
-    candidate_metrics = aggregate[best_candidate_name]
+        candidate_bundle = fit_model_bundle(
+            candidate_feature_frame(frame), frame["margin"], frame["team_win"],
+            sample_weight=final_weights,
+        )
+    candidate_metrics = pooled[best_candidate_name]
     training_seasons = sorted(frame["season"].dropna().astype(int).unique().tolist())
 
     # Extract pooled out-of-sample predictions for calibration
     pooled_raw_probability = None
     pooled_y_true = None
+    pooled_seed_diff = None
     if best_candidate_name in predictions_by_model:
         pooled_predictions = predictions_by_model[best_candidate_name]
         pooled_raw_probability = pooled_predictions["raw_probability"].to_numpy()
         pooled_y_true = pooled_predictions["team_win"].to_numpy()
+        pooled_seed_diff = pooled_predictions["seed_diff"].to_numpy()
 
     candidate_payload = candidate_artifact(
         candidate_bundle,
@@ -1107,6 +1259,7 @@ def main() -> None:
         "data/models/tournament-consensus-candidate.json",
         pooled_raw_probability=pooled_raw_probability,
         pooled_y_true=pooled_y_true,
+        pooled_seed_diff=pooled_seed_diff,
     )
 
     report = {
@@ -1118,7 +1271,9 @@ def main() -> None:
             "sourceCoverage": source_coverage(frame),
         },
         "aggregateMetrics": aggregate,
+        "pooledMetrics": pooled,
         "aggregateWinners": metric_winners(aggregate),
+        "pooledWinners": metric_winners(pooled),
         "backtestBySeason": json.loads(backtest_frame.to_json(orient="records")),
         "calibrationBuckets": {
             model_name: calibration_buckets(predictions)
@@ -1132,7 +1287,7 @@ def main() -> None:
             "bestCandidate": best_candidate_name,
             "eligibleByMetrics": should_promote(
                 candidate_metrics,
-                {name: aggregate[name] for name in PROMOTION_BASELINES if name in aggregate},
+                {name: pooled[name] for name in PROMOTION_BASELINES if name in pooled},
             ),
             "runtimeCompatible": is_runtime_compatible(candidate_payload),
             "latestArtifactUpdated": False,
