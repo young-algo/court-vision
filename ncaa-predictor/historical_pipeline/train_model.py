@@ -517,6 +517,18 @@ def compute_temporal_weights(seasons: pd.Series, decay: float = TEMPORAL_DECAY) 
     return np.array([decay ** (max_season - int(s)) for s in seasons])
 
 
+def compute_training_weights(frame: pd.DataFrame, decay: float = TEMPORAL_DECAY) -> np.ndarray:
+    """Temporal weights boosted 1.5x for upset games (higher seed beats lower seed).
+
+    Upsets are rare and systematically underrepresented in training signal.
+    Boosting their weight pushes the model away from overconfident favorite predictions.
+    """
+    temporal = compute_temporal_weights(frame["season"], decay)
+    upset_mask = (frame["seed_diff"] > 0) & (frame["team_win"] == 1)
+    upset_boost = np.where(upset_mask, 1.5, 1.0)
+    return temporal * upset_boost
+
+
 def fit_and_predict(
     model_name: str,
     train_features: pd.DataFrame,
@@ -526,7 +538,7 @@ def fit_and_predict(
     baseline_detail: str | None = None,
     win_feature_names: list[str] | None = None,
 ) -> tuple[dict[str, float], pd.DataFrame]:
-    temporal_weights = compute_temporal_weights(train["season"])
+    temporal_weights = compute_training_weights(train)
     bundle = fit_model_bundle(
         train_features,
         train["margin"],
@@ -560,7 +572,7 @@ def fit_and_predict_distilled(
     baseline_detail: str | None = None,
     win_feature_names: list[str] | None = None,
 ) -> tuple[dict[str, float], pd.DataFrame]:
-    temporal_weights = compute_temporal_weights(train["season"])
+    temporal_weights = compute_training_weights(train)
     bundle = fit_distilled_model_bundle(
         train_features,
         train["margin"],
@@ -905,7 +917,10 @@ def candidate_artifact(
         },
         "calibration": {
             "anchors": calibration_anchor_rows(raw_probability, y_true),
-            "seedGapAnchors": seed_gap_calibration_anchor_rows(raw_probability, y_true, seed_diff),
+            # Tier-1: seed gap >= 5 (covers most mismatches)
+            "seedGapAnchors": seed_gap_calibration_anchor_rows(raw_probability, y_true, seed_diff, gap_threshold=5),
+            # Tier-2: extreme gap >= 8 (1v16, 2v15, 3v14 type matchups)
+            "extremeGapAnchors": seed_gap_calibration_anchor_rows(raw_probability, y_true, seed_diff, gap_threshold=8),
         },
         "metrics": aggregate_metrics,
         "artifact_path": artifact_path,
@@ -1093,6 +1108,59 @@ def aggregate_metrics(backtest_rows: pd.DataFrame) -> dict[str, dict[str, float]
     return aggregates
 
 
+ENSEMBLE_MEMBERS = ("enhanced_candidate_stack", "gbm_distilled_candidate_stack")
+
+
+def blend_candidate_predictions(
+    predictions_by_model: dict[str, pd.DataFrame],
+    member_names: tuple[str, ...] = ENSEMBLE_MEMBERS,
+) -> pd.DataFrame | None:
+    """Blend probability predictions from multiple candidates using inverse-logLoss weights.
+
+    Returns a merged predictions DataFrame with blended probability/raw_probability columns,
+    or None if fewer than 2 members are available.
+    """
+    available = [name for name in member_names if name in predictions_by_model]
+    if len(available) < 2:
+        return None
+
+    member_frames = [predictions_by_model[name] for name in available]
+    # Each frame is aligned by position (same rolling pairs, same order)
+    base = member_frames[0][["season", "team_win", "margin", "seed_diff", "predicted_margin"]].copy()
+
+    # Compute per-member pooled logLoss; use inverse as blend weight
+    per_member_loss = []
+    for frame in member_frames:
+        clipped = np.clip(frame["probability"].to_numpy(), 0.01, 0.99)
+        loss = float(log_loss(frame["team_win"], clipped, labels=[0, 1]))
+        per_member_loss.append(loss)
+
+    inverse_losses = [1.0 / loss for loss in per_member_loss]
+    total = sum(inverse_losses)
+    weights = [inv / total for inv in inverse_losses]
+
+    blended_prob = sum(
+        w * np.clip(frame["probability"].to_numpy(), 0.01, 0.99)
+        for w, frame in zip(weights, member_frames)
+    )
+    blended_raw = sum(
+        w * np.clip(frame["raw_probability"].to_numpy(), 0.01, 0.99)
+        for w, frame in zip(weights, member_frames)
+    )
+    # Blended margin: weight by same inverse-logLoss
+    blended_margin = sum(
+        w * frame["predicted_margin"].to_numpy()
+        for w, frame in zip(weights, member_frames)
+    )
+
+    base["probability"] = np.clip(blended_prob, 0.01, 0.99)
+    base["raw_probability"] = np.clip(blended_raw, 0.01, 0.99)
+    base["predicted_margin"] = blended_margin
+    base["model"] = "ensemble_blend"
+    base["baselineDetail"] = f"blend:{','.join(f'{n}@{w:.2f}' for n, w in zip(available, weights))}"
+    return base
+
+
 def compute_pooled_metrics(predictions_by_model: dict[str, pd.DataFrame]) -> dict[str, dict[str, float]]:
     pooled: dict[str, dict[str, float]] = {}
     for model_name, predictions in predictions_by_model.items():
@@ -1195,8 +1263,8 @@ def main() -> None:
         available_candidates = [name for name in candidate_preference if name in pooled]
         best_candidate_name = min(available_candidates, key=lambda name: pooled[name]["logLoss"])
 
-    # Train the best candidate on all data
-    final_weights = compute_temporal_weights(frame["season"])
+    # Train the best candidate on all data (with upset-aware boost)
+    final_weights = compute_training_weights(frame)
     if best_candidate_name == "enhanced_candidate_stack":
         candidate_bundle = fit_distilled_model_bundle(
             enhanced_candidate_feature_frame(frame),

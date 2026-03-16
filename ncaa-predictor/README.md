@@ -18,6 +18,73 @@ Court Vision combines multiple public college basketball rating systems into a c
 
 ## How It Works
 
+### Prediction Flow
+
+```mermaid
+graph TB
+    subgraph Training["Historical ML Pipeline (Python, offline)"]
+        direction TB
+        G["Tournament Games\n9 seasons, 2016–2025"]
+        S["Rating Snapshots\nKenPom · BPI · NET · Massey\nEvanMiya · 538"]
+        G & S --> D["Feature Engineering\n30+ features per matchup"]
+        D --> LOSO["Leave-One-Season-Out\nCross-Validation"]
+        LOSO --> |"GBM teacher\n→ Ridge student"| ARTIFACT["Model Artifact (JSON)\ncoefficients · scaler\ncalibration anchors"]
+    end
+
+    subgraph Startup["Server Startup"]
+        direction TB
+        SEED["teams.json\ncurrent-season snapshot"] --> PS["Prediction\nService"]
+        ARTIFACT --> PS
+        PS --> LATENT["Latent Consensus Model\nPCA + z-score blend\nof 5 rating sources"]
+    end
+
+    subgraph Predict["Making a Prediction"]
+        direction TB
+        REQ["Team A vs Team B\n+ venue + round"] --> COMP
+
+        subgraph COMP["Build 5 Component Opinions"]
+            direction LR
+            C1["Torvik\nEfficiency"]
+            C2["Torvik\nBarthag"]
+            C3["ESPN\nBPI"]
+            C4["NET\nRating"]
+            C5["Resume\n& Form"]
+        end
+
+        COMP --> CONSENSUS["Weighted Consensus Margin\neach source votes on expected spread"]
+        CONSENSUS --> FEATURES["Feature Vector\nrating diffs · seed interactions\nround context · disagreement"]
+        FEATURES --> LEARNED["Learned Model\nRidge margin + logistic win prob"]
+        LEARNED --> CALIB
+
+        subgraph CALIB["Calibration"]
+            direction LR
+            ISO["Isotonic\nGeneral"]
+            SGAP["Isotonic\nSeed-Gap ≥5"]
+            XGAP["Isotonic\nExtreme ≥8"]
+        end
+
+        CALIB --> SHRINK["Shrinkage\nadjust for disagreement\n& source coverage"]
+        SHRINK --> PROB["Final Win Probability\n+ margin · spread · confidence tier"]
+    end
+
+    subgraph Bracket["Bracket Simulation"]
+        direction TB
+        FIELD["64-Team Field\n4 regions × 16 seeds"] --> MC["Monte Carlo\n4,000 iterations"]
+        MC --> |"each game calls\npredictMatchup\nwith round context"| SIM["Simulate 63 Games\nR64 → R32 → S16 → E8\n→ F4 → Championship"]
+        SIM --> ODDS["Round-by-Round\nAdvancement Odds\nper team"]
+    end
+
+    PS -.-> Predict
+    PS -.-> Bracket
+
+    style Training fill:#f0f4ff,stroke:#4a6fa5
+    style Startup fill:#f5f0ff,stroke:#7a5fa5
+    style Predict fill:#f0fff4,stroke:#4aa56f
+    style Bracket fill:#fff8f0,stroke:#a5874a
+    style COMP fill:#e8f0e8,stroke:#4a8a4a
+    style CALIB fill:#fef3e0,stroke:#c98a2e
+```
+
 The prediction engine blends five component opinions (Torvik efficiency, Torvik Barthag, BPI, NET, resume/form) into a weighted consensus margin. A trained ML model (GBM-distilled Ridge regression) refines this into calibrated win probabilities using features like:
 
 - Multi-source rating differentials (KenPom, EvanMiya, BPI, NET, Massey)

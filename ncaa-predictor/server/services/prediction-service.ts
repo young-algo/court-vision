@@ -20,6 +20,23 @@ import type { LearnedTournamentArtifact } from "./learned-tournament-artifact";
 const D1_AVG_EFFICIENCY = 100;
 const HOME_COURT_ADVANTAGE = 3.4;
 const SIGMA = 11.1;
+
+/**
+ * Matchup-dependent standard deviation.
+ * High-tempo games have more possessions → higher variance.
+ * Later tournament rounds feature more evenly-matched teams → higher variance.
+ * Both effects are modest and additive on the base SIGMA.
+ */
+function matchupSigma(
+  tempoA: number,
+  tempoB: number,
+  tournamentRound: number,
+): number {
+  const avgTempo = (tempoA + tempoB) / 2;
+  const tempoFactor = (avgTempo - 67) * 0.03;
+  const roundFactor = tournamentRound > 0 ? 0.4 * Math.sqrt(tournamentRound) : 0;
+  return SIGMA + tempoFactor + roundFactor;
+}
 const ROUND_ONE_PAIRINGS: Array<[number, number]> = [
   [1, 16],
   [8, 9],
@@ -400,8 +417,12 @@ export class PredictionService {
     const observedSourceCount = normalizedComponents.filter(
       (component) => component.availability === "observed",
     ).length;
+    // Use matchup-dependent sigma: wider for high-tempo games and later rounds.
+    // Also widen for extreme seed gaps (|gap| >= 8) where upsets are empirically more common.
+    const baseSigma = matchupSigma(snapshotA.tempo, snapshotB.tempo, tournamentRound);
+    const adjustedSigma = baseSigma + disagreementIndex * 0.2 + (Math.abs(seedDiff) >= 8 ? 1.5 : 0);
     const rawProbabilityA = clamp(
-      1 - normalCdf(0, expectedMargin, SIGMA + disagreementIndex * 0.2),
+      1 - normalCdf(0, expectedMargin, adjustedSigma),
       0.01,
       0.99,
     );
@@ -1068,14 +1089,22 @@ export class PredictionService {
     );
     const generalAnchors = this.learnedArtifact?.calibration.anchors ?? CALIBRATION_ANCHORS;
     const seedGapAnchors = this.learnedArtifact?.calibration.seedGapAnchors;
+    const extremeGapAnchors = this.learnedArtifact?.calibration.extremeGapAnchors;
     const generalCalibrated = interpolateCalibration(learnedProbability, generalAnchors);
 
     let isotonic = generalCalibrated;
-    if (seedGapAnchors && seedGapAnchors.length > 0 && Math.abs(seedDiff) >= 5) {
+    const absSeedDiff = Math.abs(seedDiff);
+    // Tier-1 (gap >= 5): blend from general → seed-gap-specific as gap grows 5→8
+    if (seedGapAnchors && seedGapAnchors.length > 0 && absSeedDiff >= 5) {
       const seedGapCalibrated = interpolateCalibration(learnedProbability, seedGapAnchors);
-      // Blend: fully seed-gap-specific at gap=10+, 50/50 at gap=5
-      const blendWeight = clamp((Math.abs(seedDiff) - 5) / 5, 0, 1);
-      isotonic = generalCalibrated * (1 - blendWeight) + seedGapCalibrated * blendWeight;
+      const tier1Weight = clamp((absSeedDiff - 5) / 3, 0, 1);
+      isotonic = generalCalibrated * (1 - tier1Weight) + seedGapCalibrated * tier1Weight;
+    }
+    // Tier-2 (gap >= 8): blend from tier-1 result → extreme-gap-specific as gap grows 8→12
+    if (extremeGapAnchors && extremeGapAnchors.length > 0 && absSeedDiff >= 8) {
+      const extremeCalibrated = interpolateCalibration(learnedProbability, extremeGapAnchors);
+      const tier2Weight = clamp((absSeedDiff - 8) / 4, 0, 1);
+      isotonic = isotonic * (1 - tier2Weight) + extremeCalibrated * tier2Weight;
     }
 
     const observedShare = observedSourceCount / sourceCount;

@@ -2,7 +2,7 @@
   "id": "tournament-consensus-candidate",
   "label": "Learned Tournament Consensus Candidate",
   "model_type": "learned_tournament_consensus",
-  "generated_at": "2026-03-16T03:23:36.750066+00:00",
+  "generated_at": "2026-03-16T03:57:53.012180+00:00",
   "snapshot_policy": "selection_sunday_latest_stable",
   "training_seasons": [
     2016,
@@ -117,10 +117,10 @@
     }
   },
   "source_weights": {
-    "bpi_rank_percentile_diff": 0.0453,
-    "massey_ordinal_rank_percentile_diff": 0.0616,
-    "kenpom_badj_em_power_diff": 0.4879,
-    "evanmiya_relative_rating_power_diff": 0.4052
+    "bpi_rank_percentile_diff": 0.0526,
+    "massey_ordinal_rank_percentile_diff": 0.0555,
+    "kenpom_badj_em_power_diff": 0.514,
+    "evanmiya_relative_rating_power_diff": 0.3779
   },
   "scaler": {
     "means": {
@@ -151,105 +151,135 @@
     }
   },
   "margin_model": {
-    "intercept": 0.00046586490338413765,
+    "intercept": 0.8659226826343344,
     "coefficients": {
-      "kenpom_badj_em_power_diff": 3.811787913051452,
-      "massey_ordinal_rank_percentile_diff": -0.4816157580488465,
-      "bpi_rank_percentile_diff": 0.3537693024878683,
-      "evanmiya_relative_rating_power_diff": 3.1656737708855847,
-      "seed_diff": -3.187757590308429,
-      "seed_kenpom_interaction": 0.0016451715630818597,
-      "abs_seed_same_conference_interaction": 0.011478602924643866,
-      "missing_kenpom_badj_em": -0.004276842047447715,
-      "missing_massey_ordinal_rank": 0.007201490789364939,
-      "missing_bpi_rank": 0.0008954711974613616,
-      "missing_evanmiya_relative_rating": -0.004276842047447715
+      "kenpom_badj_em_power_diff": 4.072290701065408,
+      "massey_ordinal_rank_percentile_diff": -0.439449482698695,
+      "bpi_rank_percentile_diff": 0.4164266898864941,
+      "evanmiya_relative_rating_power_diff": 2.993967041283655,
+      "seed_diff": -2.452624029014104,
+      "seed_kenpom_interaction": 0.20666773636317082,
+      "abs_seed_same_conference_interaction": 0.018509071382569076,
+      "missing_kenpom_badj_em": 0.012975427862409461,
+      "missing_massey_ordinal_rank": 0.009142014369428075,
+      "missing_bpi_rank": -0.1129126725041818,
+      "missing_evanmiya_relative_rating": 0.012975427862409461
     }
   },
   "win_model": {
-    "intercept": -9.17922589255038e-06,
+    "intercept": 0.18127457674332395,
     "coefficients": {
-      "kenpom_badj_em_power_diff": 0.7208149452187049,
-      "massey_ordinal_rank_percentile_diff": 0.05831253807942505,
-      "bpi_rank_percentile_diff": -0.1340035469528278,
-      "evanmiya_relative_rating_power_diff": 0.6076743573378264,
-      "seed_kenpom_interaction": -0.0042898910282520575,
-      "abs_seed_same_conference_interaction": 0.002648789758910919,
-      "missing_kenpom_badj_em": -0.001724576800847033,
-      "missing_massey_ordinal_rank": 0.001276898053768294,
-      "missing_bpi_rank": 0.00435295271900682,
-      "missing_evanmiya_relative_rating": -0.001724576800847033
+      "kenpom_badj_em_power_diff": 0.6490080311956521,
+      "massey_ordinal_rank_percentile_diff": 0.02721200962278969,
+      "bpi_rank_percentile_diff": -0.11080718890417707,
+      "evanmiya_relative_rating_power_diff": 0.5710021189510366,
+      "seed_kenpom_interaction": 0.030349095500177503,
+      "abs_seed_same_conference_interaction": 0.0028756255371242823,
+      "missing_kenpom_badj_em": 0.005042546693375227,
+      "missing_massey_ordinal_rank": -0.0032776687332574106,
+      "missing_bpi_rank": -0.009823842211829359,
+      "missing_evanmiya_relative_rating": 0.005042546693375227
     }
   },
   "calibration": {
     "anchors": [
       {
-        "raw": 0.08820244834021652,
-        "calibrated": 0.09723374827109267
+        "raw": 0.11538848279210935,
+        "calibrated": 0.1
       },
       {
-        "raw": 0.22476677488206592,
-        "calibrated": 0.16699669966996697
+        "raw": 0.28128498456102813,
+        "calibrated": 0.16956521739130434
       },
       {
-        "raw": 0.3281286075846508,
-        "calibrated": 0.3445969125214408
-      },
-      {
-        "raw": 0.4993418425412835,
-        "calibrated": 0.49713138267355134
+        "raw": 0.39516696441314036,
+        "calibrated": 0.3387096774193548
       },
       {
         "raw": 0.5,
         "calibrated": 0.5
       },
       {
-        "raw": 0.6709974692763626,
-        "calibrated": 0.6502487562189055
+        "raw": 0.5448765373105282,
+        "calibrated": 0.4888888888888889
       },
       {
-        "raw": 0.8355990655395156,
-        "calibrated": 0.9014025245441795
+        "raw": 0.705638128456251,
+        "calibrated": 0.6397450753186559
+      },
+      {
+        "raw": 0.848237381931627,
+        "calibrated": 0.8695652173913043
       }
     ],
     "seedGapAnchors": [
       {
-        "raw": 0.054431231311621156,
-        "calibrated": 0.075
+        "raw": 0.07422302456060248,
+        "calibrated": 0.07011494252873562
       },
       {
-        "raw": 0.14943835288367488,
-        "calibrated": 0.1014388489208633
+        "raw": 0.20076747148401938,
+        "calibrated": 0.10508474576271187
       },
       {
-        "raw": 0.2375025165525146,
-        "calibrated": 0.21428571428571427
-      },
-      {
-        "raw": 0.4993418425412835,
-        "calibrated": 0.5
+        "raw": 0.30072002208368953,
+        "calibrated": 0.15825242718446603
       },
       {
         "raw": 0.5,
         "calibrated": 0.5
       },
       {
-        "raw": 0.7619416444392789,
-        "calibrated": 0.8
+        "raw": 0.5411377406746738,
+        "calibrated": 0.5051546391752578
       },
       {
-        "raw": 0.8941440660547535,
-        "calibrated": 0.8974683544303796
+        "raw": 0.7835132528852404,
+        "calibrated": 0.8430769230769232
+      },
+      {
+        "raw": 0.8915400509661257,
+        "calibrated": 0.9089887640449439
+      }
+    ],
+    "extremeGapAnchors": [
+      {
+        "raw": 0.05466165331198213,
+        "calibrated": 0.07176470588235295
+      },
+      {
+        "raw": 0.14385090996428176,
+        "calibrated": 0.10344827586206896
+      },
+      {
+        "raw": 0.22777602666539437,
+        "calibrated": 0.12471399387194504
+      },
+      {
+        "raw": 0.5,
+        "calibrated": 0.5
+      },
+      {
+        "raw": 0.5409252679148028,
+        "calibrated": 0.5
+      },
+      {
+        "raw": 0.8318208606112514,
+        "calibrated": 0.8947368421052632
+      },
+      {
+        "raw": 0.925560164318238,
+        "calibrated": 0.9210526315789473
       }
     ]
   },
   "metrics": {
-    "logLoss": 0.5664093062808186,
-    "brierScore": 0.1913700763838524,
-    "marginMae": 9.526077584262556,
-    "calibrationError": 0.017605865188985464,
-    "upsetRecall": 0.2727272727272727,
-    "meanCalibrationShift": 0.0314361684865844
+    "logLoss": 0.5649234214430143,
+    "brierScore": 0.19056289601107093,
+    "marginMae": 9.620008126430891,
+    "calibrationError": 0.020290125725967792,
+    "upsetRecall": 0.32867132867132864,
+    "meanCalibrationShift": 0.05376991549675792
   },
   "artifact_path": "data/models/tournament-consensus-candidate.json",
   "notes": "Training-only candidate artifact built from source-native feature semantics. Not promoted by default.",

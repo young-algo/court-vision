@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-16T03:23:36.779094+00:00",
+  "generatedAt": "2026-03-16T03:57:53.044339+00:00",
   "datasetCoverage": {
     "rowCount": 1132,
     "seasonCount": 9,
@@ -110,263 +110,263 @@
   },
   "aggregateMetrics": {
     "best_single_source_bpi": {
-      "logLoss": 0.6097283849444838,
-      "brierScore": 0.20589638829137263,
-      "marginMae": 10.581447801730079,
-      "calibrationError": 0.0695465865029884,
-      "upsetRecall": 0.35625569605832763
+      "logLoss": 0.611972822763684,
+      "brierScore": 0.20739929859431833,
+      "marginMae": 10.59029378693635,
+      "calibrationError": 0.07784501372102051,
+      "upsetRecall": 0.42415983139667346
     },
     "best_single_source_net": {
-      "logLoss": 0.645290136319733,
-      "brierScore": 0.22721583965540887,
-      "marginMae": 10.958499842682441,
-      "calibrationError": 0.05378463357412286,
-      "upsetRecall": 0.6355946684894054
+      "logLoss": 0.6508644452553702,
+      "brierScore": 0.22993031791630308,
+      "marginMae": 10.99319450928893,
+      "calibrationError": 0.06255257671849601,
+      "upsetRecall": 0.774151287309182
     },
     "best_single_source_power": {
-      "logLoss": 0.5719487259014356,
-      "brierScore": 0.1929325070418352,
-      "marginMae": 9.566884595745762,
-      "calibrationError": 0.08545306513996087,
-      "upsetRecall": 0.22762161084529503
+      "logLoss": 0.573902451329616,
+      "brierScore": 0.1943745648386312,
+      "marginMae": 9.62546961230202,
+      "calibrationError": 0.08177386812296814,
+      "upsetRecall": 0.521182216905901
     },
     "candidate_stack": {
-      "logLoss": 0.5775997690267176,
-      "brierScore": 0.19172669347442195,
-      "marginMae": 9.47855030808649,
-      "calibrationError": 0.11059957930330502,
-      "upsetRecall": 0.10464371155160629
+      "logLoss": 0.5832857642664062,
+      "brierScore": 0.19527701323841468,
+      "marginMae": 9.578599393479177,
+      "calibrationError": 0.10241344014901009,
+      "upsetRecall": 0.3592304625199362
     },
     "candidate_stack_with_massey_master": {
-      "logLoss": 0.5815622399942457,
-      "brierScore": 0.19288005001073413,
-      "marginMae": 9.558191189987381,
-      "calibrationError": 0.10717256749603088,
-      "upsetRecall": 0.0828861927546138
+      "logLoss": 0.5870761480896826,
+      "brierScore": 0.19572384296363274,
+      "marginMae": 9.64665262160706,
+      "calibrationError": 0.09399018361359511,
+      "upsetRecall": 0.33857797903850534
     },
     "current_stack_compat": {
-      "logLoss": 0.6033413127888678,
-      "brierScore": 0.19991197454602413,
-      "marginMae": 9.797241510338985,
-      "calibrationError": 0.10900885344508966,
-      "upsetRecall": 0.1210127591706539
+      "logLoss": 0.6145680337281936,
+      "brierScore": 0.2046448978389876,
+      "marginMae": 9.91564110543468,
+      "calibrationError": 0.11614353332776256,
+      "upsetRecall": 0.28417777398040556
     },
     "enhanced_candidate_stack": {
-      "logLoss": 0.5699420225863727,
-      "brierScore": 0.1917304930363597,
-      "marginMae": 9.625244471682766,
-      "calibrationError": 0.05617989415040433,
-      "upsetRecall": 0.3033336181362497
+      "logLoss": 0.5693572689442224,
+      "brierScore": 0.19158012976836825,
+      "marginMae": 9.714609377240073,
+      "calibrationError": 0.06098605408261646,
+      "upsetRecall": 0.35276970836181365
     },
     "equal_weight_consensus": {
-      "logLoss": 0.594960950305741,
-      "brierScore": 0.19764680414356556,
-      "marginMae": 9.98399210753527,
-      "calibrationError": 0.07684773106434932,
-      "upsetRecall": 0.25286511733880157
+      "logLoss": 0.5959473093075769,
+      "brierScore": 0.19903829077879243,
+      "marginMae": 10.024325988737441,
+      "calibrationError": 0.08462468624203859,
+      "upsetRecall": 0.45312856003645474
     },
     "gbm_distilled_candidate_stack": {
-      "logLoss": 0.5664317378577965,
-      "brierScore": 0.1913796468826492,
-      "marginMae": 9.527669989874273,
-      "calibrationError": 0.06133149213259369,
-      "upsetRecall": 0.2671195033037138
+      "logLoss": 0.5649553049299396,
+      "brierScore": 0.1905765219256346,
+      "marginMae": 9.621436892418325,
+      "calibrationError": 0.06556108997918884,
+      "upsetRecall": 0.31254556846662107
     },
     "optimized_candidate_stack": {
-      "logLoss": 0.574208295231529,
-      "brierScore": 0.19186593966253984,
-      "marginMae": 9.479279403420342,
-      "calibrationError": 0.07626564857740345,
-      "upsetRecall": 0.2728597060833903
+      "logLoss": 0.5771925247605083,
+      "brierScore": 0.19435441445267274,
+      "marginMae": 9.560452692155362,
+      "calibrationError": 0.08922020831989215,
+      "upsetRecall": 0.4647670312143996
     },
     "reduced_candidate_stack": {
-      "logLoss": 0.5702432442537462,
-      "brierScore": 0.19017513963049737,
-      "marginMae": 9.47437763320324,
-      "calibrationError": 0.10907206873189762,
-      "upsetRecall": 0.0835127591706539
+      "logLoss": 0.5691078532587996,
+      "brierScore": 0.19032718716622574,
+      "marginMae": 9.565736877119747,
+      "calibrationError": 0.09893669984661607,
+      "upsetRecall": 0.32693808384597856
     },
     "seed_only_logit": {
-      "logLoss": 0.5741475351241307,
-      "brierScore": 0.19428318010580803,
-      "marginMae": 9.87664605052891,
-      "calibrationError": 0.0768900108266105,
-      "upsetRecall": 0.008928571428571428
+      "logLoss": 0.5791255257905452,
+      "brierScore": 0.19698301942725455,
+      "marginMae": 9.990753938303168,
+      "calibrationError": 0.07604540409457994,
+      "upsetRecall": 0.2266974253816359
     }
   },
   "pooledMetrics": {
     "candidate_stack": {
-      "logLoss": 0.5773768984027874,
-      "brierScore": 0.19166604217691746,
-      "marginMae": 9.476985440747304,
-      "calibrationError": 0.02879098005358683,
-      "upsetRecall": 0.1048951048951049,
+      "logLoss": 0.5831032462930603,
+      "brierScore": 0.19522855690796975,
+      "marginMae": 9.577134241551216,
+      "calibrationError": 0.05281878149958307,
+      "upsetRecall": 0.34965034965034963,
       "meanCalibrationShift": 0.0
     },
     "optimized_candidate_stack": {
-      "logLoss": 0.5740970400526608,
-      "brierScore": 0.19183868612219143,
-      "marginMae": 9.477445059819987,
-      "calibrationError": 0.0334801196815593,
-      "upsetRecall": 0.27972027972027974,
+      "logLoss": 0.5771077386662703,
+      "brierScore": 0.19433230462767806,
+      "marginMae": 9.558770213564456,
+      "calibrationError": 0.055704327433970566,
+      "upsetRecall": 0.46153846153846156,
       "meanCalibrationShift": 0.0
     },
     "gbm_distilled_candidate_stack": {
-      "logLoss": 0.5664093062808186,
-      "brierScore": 0.1913700763838524,
-      "marginMae": 9.526077584262556,
-      "calibrationError": 0.017605865188985464,
-      "upsetRecall": 0.2727272727272727,
-      "meanCalibrationShift": 0.0314361684865844
+      "logLoss": 0.5649234214430143,
+      "brierScore": 0.19056289601107093,
+      "marginMae": 9.620008126430891,
+      "calibrationError": 0.020290125725967792,
+      "upsetRecall": 0.32867132867132864,
+      "meanCalibrationShift": 0.05376991549675792
     },
     "enhanced_candidate_stack": {
-      "logLoss": 0.5699295643529365,
-      "brierScore": 0.19172204125048103,
-      "marginMae": 9.62366974982157,
-      "calibrationError": 0.021575640021192066,
-      "upsetRecall": 0.3006993006993007,
-      "meanCalibrationShift": 0.033145903977104034
+      "logLoss": 0.5693384711219852,
+      "brierScore": 0.19157089416253673,
+      "marginMae": 9.713138668616708,
+      "calibrationError": 0.023234993324032976,
+      "upsetRecall": 0.35664335664335667,
+      "meanCalibrationShift": 0.05378637589547689
     },
     "candidate_stack_with_massey_master": {
-      "logLoss": 0.5812575247043575,
-      "brierScore": 0.19280034570924537,
-      "marginMae": 9.556239788165595,
-      "calibrationError": 0.03630806028747262,
-      "upsetRecall": 0.08391608391608392,
+      "logLoss": 0.5868141084618367,
+      "brierScore": 0.19565749438634442,
+      "marginMae": 9.644685783748827,
+      "calibrationError": 0.05801742547602449,
+      "upsetRecall": 0.3356643356643357,
       "meanCalibrationShift": 0.0
     },
     "reduced_candidate_stack": {
-      "logLoss": 0.5700798822927086,
-      "brierScore": 0.1901110978391984,
-      "marginMae": 9.472631481446411,
-      "calibrationError": 0.029286196604162693,
-      "upsetRecall": 0.08391608391608392,
+      "logLoss": 0.5689955867912541,
+      "brierScore": 0.19027998302624546,
+      "marginMae": 9.564135974378877,
+      "calibrationError": 0.05102807008303229,
+      "upsetRecall": 0.32167832167832167,
       "meanCalibrationShift": 0.0
     },
     "seed_only_logit": {
-      "logLoss": 0.5739634355458314,
-      "brierScore": 0.19421106120952952,
-      "marginMae": 9.873927280082569,
-      "calibrationError": 0.01873716021748078,
-      "upsetRecall": 0.006993006993006993,
+      "logLoss": 0.57896737633948,
+      "brierScore": 0.19691801126140415,
+      "marginMae": 9.988229652962998,
+      "calibrationError": 0.04333769862418971,
+      "upsetRecall": 0.23076923076923078,
       "meanCalibrationShift": 0.0
     },
     "equal_weight_consensus": {
-      "logLoss": 0.5947321738192626,
-      "brierScore": 0.19760662219339686,
-      "marginMae": 9.98173451175306,
-      "calibrationError": 0.03331827060709568,
-      "upsetRecall": 0.26573426573426573,
+      "logLoss": 0.5957276501607993,
+      "brierScore": 0.1990002481195381,
+      "marginMae": 10.02221088094902,
+      "calibrationError": 0.05477027461835353,
+      "upsetRecall": 0.45454545454545453,
       "meanCalibrationShift": 0.0
     },
     "best_single_source_bpi": {
-      "logLoss": 0.6095955232175242,
-      "brierScore": 0.20589672245394244,
-      "marginMae": 10.581075200396977,
-      "calibrationError": 0.03017165551633632,
-      "upsetRecall": 0.36363636363636365,
+      "logLoss": 0.6118386835182319,
+      "brierScore": 0.20740024277635402,
+      "marginMae": 10.58993177710792,
+      "calibrationError": 0.053307928333899704,
+      "upsetRecall": 0.44755244755244755,
       "meanCalibrationShift": 0.0
     },
     "best_single_source_net": {
-      "logLoss": 0.6451949927061739,
-      "brierScore": 0.22717054292174174,
-      "marginMae": 10.95931634797426,
-      "calibrationError": 0.03669861292585162,
-      "upsetRecall": 0.6433566433566433,
+      "logLoss": 0.6507756286969599,
+      "brierScore": 0.2298880459031589,
+      "marginMae": 10.994016402016648,
+      "calibrationError": 0.06119370309538553,
+      "upsetRecall": 0.7902097902097902,
       "meanCalibrationShift": 0.0
     },
     "best_single_source_power": {
-      "logLoss": 0.5719172699438443,
-      "brierScore": 0.19291790749722634,
-      "marginMae": 9.565516129075064,
-      "calibrationError": 0.02914590748565144,
-      "upsetRecall": 0.22377622377622378,
+      "logLoss": 0.5738838975518975,
+      "brierScore": 0.19436484547434174,
+      "marginMae": 9.624094917220981,
+      "calibrationError": 0.046645976067958034,
+      "upsetRecall": 0.5314685314685315,
       "meanCalibrationShift": 0.0
     },
     "current_stack_compat": {
-      "logLoss": 0.6031308859162551,
-      "brierScore": 0.19984877236871357,
-      "marginMae": 9.794813650393591,
-      "calibrationError": 0.0688799570337659,
-      "upsetRecall": 0.1258741258741259,
+      "logLoss": 0.6144251257587361,
+      "brierScore": 0.20459789193894493,
+      "marginMae": 9.913521522217705,
+      "calibrationError": 0.07126506929249211,
+      "upsetRecall": 0.2937062937062937,
       "meanCalibrationShift": 0.0
     }
   },
   "aggregateWinners": {
-    "marginMae": "reduced_candidate_stack",
+    "calibrationError": "enhanced_candidate_stack",
+    "marginMae": "optimized_candidate_stack",
     "logLoss": "gbm_distilled_candidate_stack",
     "brierScore": "reduced_candidate_stack",
-    "calibrationError": "best_single_source_net",
     "upsetRecall": "best_single_source_net"
   },
   "pooledWinners": {
-    "marginMae": "reduced_candidate_stack",
+    "calibrationError": "gbm_distilled_candidate_stack",
+    "marginMae": "optimized_candidate_stack",
     "logLoss": "gbm_distilled_candidate_stack",
     "brierScore": "reduced_candidate_stack",
-    "calibrationError": "gbm_distilled_candidate_stack",
     "upsetRecall": "best_single_source_net"
   },
   "backtestBySeason": [
     {
-      "logLoss": 0.5037907839,
-      "brierScore": 0.1733012862,
-      "marginMae": 8.0679339523,
-      "calibrationError": 0.1096724854,
-      "upsetRecall": 0.1428571429,
+      "logLoss": 0.517936294,
+      "brierScore": 0.1794083286,
+      "marginMae": 8.0976370073,
+      "calibrationError": 0.1376786462,
+      "upsetRecall": 0.4285714286,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2017,
       "model": "candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.5074018817,
-      "brierScore": 0.1724308566,
-      "marginMae": 8.0283149539,
-      "calibrationError": 0.0702934329,
-      "upsetRecall": 0.1428571429,
+      "logLoss": 0.5151946665,
+      "brierScore": 0.176515972,
+      "marginMae": 8.0564636876,
+      "calibrationError": 0.0768481142,
+      "upsetRecall": 0.4285714286,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2017,
       "model": "optimized_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.4986655651,
-      "brierScore": 0.1720014557,
-      "marginMae": 8.3468071808,
-      "calibrationError": 0.0290297374,
-      "upsetRecall": 0.2857142857,
-      "meanCalibrationShift": 0.0355787717,
+      "logLoss": 0.4973478822,
+      "brierScore": 0.1725262526,
+      "marginMae": 8.3671987481,
+      "calibrationError": 0.0453310603,
+      "upsetRecall": 0.1428571429,
+      "meanCalibrationShift": 0.0628825697,
       "holdoutSeason": 2017,
       "model": "gbm_distilled_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.5195301826,
-      "brierScore": 0.1811963819,
-      "marginMae": 8.9656542289,
-      "calibrationError": 0.0253515593,
+      "logLoss": 0.5047122841,
+      "brierScore": 0.1753004612,
+      "marginMae": 8.9774880517,
+      "calibrationError": 0.0123111283,
       "upsetRecall": 0.2857142857,
-      "meanCalibrationShift": 0.0438938334,
+      "meanCalibrationShift": 0.0669899908,
       "holdoutSeason": 2017,
       "model": "enhanced_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.5029339806,
-      "brierScore": 0.1749753713,
-      "marginMae": 7.9225725771,
-      "calibrationError": 0.1049753124,
-      "upsetRecall": 0.0714285714,
+      "logLoss": 0.518869443,
+      "brierScore": 0.181196451,
+      "marginMae": 7.9438758389,
+      "calibrationError": 0.0811224924,
+      "upsetRecall": 0.3571428571,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2017,
       "model": "candidate_stack_with_massey_master",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.4779737952,
-      "brierScore": 0.1623072133,
-      "marginMae": 8.3859076796,
-      "calibrationError": 0.1508461244,
+      "logLoss": 0.477113562,
+      "brierScore": 0.1621311765,
+      "marginMae": 8.4092428299,
+      "calibrationError": 0.153146397,
       "upsetRecall": 0.0714285714,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2017,
@@ -374,10 +374,10 @@
       "baselineDetail": null
     },
     {
-      "logLoss": 0.5187412432,
-      "brierScore": 0.1763634921,
-      "marginMae": 8.5324890216,
-      "calibrationError": 0.0470955588,
+      "logLoss": 0.5261804751,
+      "brierScore": 0.1788506356,
+      "marginMae": 8.6493817412,
+      "calibrationError": 0.0551185522,
       "upsetRecall": 0.0714285714,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2017,
@@ -385,32 +385,32 @@
       "baselineDetail": null
     },
     {
-      "logLoss": 0.4778178065,
-      "brierScore": 0.1648689288,
-      "marginMae": 8.0456555891,
-      "calibrationError": 0.0634008437,
-      "upsetRecall": 0.0714285714,
+      "logLoss": 0.4795576121,
+      "brierScore": 0.1656975011,
+      "marginMae": 8.0718304122,
+      "calibrationError": 0.061139555,
+      "upsetRecall": 0.2857142857,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2017,
       "model": "equal_weight_consensus",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6459907555,
-      "brierScore": 0.2277217026,
-      "marginMae": 10.6909270544,
-      "calibrationError": 0.0863850673,
-      "upsetRecall": 0.3571428571,
+      "logLoss": 0.6506666368,
+      "brierScore": 0.2297424735,
+      "marginMae": 10.7461457579,
+      "calibrationError": 0.0470440883,
+      "upsetRecall": 0.0714285714,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2017,
       "model": "best_single_source_bpi",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6931471806,
-      "brierScore": 0.25,
+      "logLoss": 0.6958333632,
+      "brierScore": 0.25133949,
       "marginMae": 11.3174603175,
-      "calibrationError": 0.0,
+      "calibrationError": 0.0365990437,
       "upsetRecall": 1.0,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2017,
@@ -418,109 +418,109 @@
       "baselineDetail": null
     },
     {
-      "logLoss": 0.5105779373,
-      "brierScore": 0.1786858575,
-      "marginMae": 8.5285485412,
-      "calibrationError": 0.0706330078,
-      "upsetRecall": 0.2857142857,
+      "logLoss": 0.5146191812,
+      "brierScore": 0.1800860061,
+      "marginMae": 8.5131112429,
+      "calibrationError": 0.0793044797,
+      "upsetRecall": 0.3571428571,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2017,
       "model": "best_single_source_power",
       "baselineDetail": "kenpom_badj_em_power_diff"
     },
     {
-      "logLoss": 0.4971413031,
-      "brierScore": 0.1694654193,
-      "marginMae": 8.1558457581,
-      "calibrationError": 0.0575494204,
-      "upsetRecall": 0.0714285714,
+      "logLoss": 0.5077835415,
+      "brierScore": 0.1738249476,
+      "marginMae": 8.3149333113,
+      "calibrationError": 0.0857846761,
+      "upsetRecall": 0.2142857143,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2017,
       "model": "current_stack_compat",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6117971928,
-      "brierScore": 0.1999024091,
-      "marginMae": 8.8115068688,
-      "calibrationError": 0.1167505342,
-      "upsetRecall": 0.0,
+      "logLoss": 0.6115383133,
+      "brierScore": 0.2010179,
+      "marginMae": 8.8500849355,
+      "calibrationError": 0.0625278724,
+      "upsetRecall": 0.3,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2018,
       "model": "candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6202627153,
-      "brierScore": 0.2039216162,
-      "marginMae": 8.8585165468,
-      "calibrationError": 0.0671113266,
-      "upsetRecall": 0.55,
+      "logLoss": 0.6159177407,
+      "brierScore": 0.2030461825,
+      "marginMae": 8.9145684569,
+      "calibrationError": 0.0769841832,
+      "upsetRecall": 0.6,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2018,
       "model": "optimized_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6116526182,
-      "brierScore": 0.1992774109,
-      "marginMae": 8.7600873956,
-      "calibrationError": 0.0413696841,
+      "logLoss": 0.6070441212,
+      "brierScore": 0.1979970939,
+      "marginMae": 8.817230861,
+      "calibrationError": 0.0584997599,
       "upsetRecall": 0.6,
-      "meanCalibrationShift": 0.036203556,
+      "meanCalibrationShift": 0.0456094952,
       "holdoutSeason": 2018,
       "model": "gbm_distilled_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6160474923,
-      "brierScore": 0.199876061,
-      "marginMae": 8.6297343666,
-      "calibrationError": 0.0511351981,
+      "logLoss": 0.6133337587,
+      "brierScore": 0.199587088,
+      "marginMae": 8.6798782588,
+      "calibrationError": 0.0610175219,
       "upsetRecall": 0.6,
-      "meanCalibrationShift": 0.0352691119,
+      "meanCalibrationShift": 0.0478844208,
       "holdoutSeason": 2018,
       "model": "enhanced_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6176637643,
-      "brierScore": 0.2015747496,
-      "marginMae": 8.9196678372,
-      "calibrationError": 0.0879661019,
-      "upsetRecall": 0.05,
+      "logLoss": 0.614017911,
+      "brierScore": 0.2001118941,
+      "marginMae": 8.9694253216,
+      "calibrationError": 0.072397367,
+      "upsetRecall": 0.35,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2018,
       "model": "candidate_stack_with_massey_master",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6207644749,
-      "brierScore": 0.2026702106,
-      "marginMae": 8.6793014663,
-      "calibrationError": 0.1386788865,
-      "upsetRecall": 0.0,
+      "logLoss": 0.6191778049,
+      "brierScore": 0.2022988235,
+      "marginMae": 8.7426746757,
+      "calibrationError": 0.0759292206,
+      "upsetRecall": 0.25,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2018,
       "model": "reduced_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6224321337,
-      "brierScore": 0.2064782315,
-      "marginMae": 9.4485752662,
-      "calibrationError": 0.0723861027,
-      "upsetRecall": 0.0,
+      "logLoss": 0.6205662156,
+      "brierScore": 0.2068287429,
+      "marginMae": 9.4835895913,
+      "calibrationError": 0.0703453279,
+      "upsetRecall": 0.25,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2018,
       "model": "seed_only_logit",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6177639439,
-      "brierScore": 0.2019013811,
-      "marginMae": 9.2266780826,
-      "calibrationError": 0.0797761139,
+      "logLoss": 0.6185837425,
+      "brierScore": 0.2027193302,
+      "marginMae": 9.2619899336,
+      "calibrationError": 0.0821228153,
       "upsetRecall": 0.6,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2018,
@@ -528,10 +528,10 @@
       "baselineDetail": null
     },
     {
-      "logLoss": 0.695881245,
-      "brierScore": 0.2476079852,
-      "marginMae": 11.2197063377,
-      "calibrationError": 0.0648290786,
+      "logLoss": 0.6963535146,
+      "brierScore": 0.2484346529,
+      "marginMae": 11.2153280621,
+      "calibrationError": 0.0842472229,
       "upsetRecall": 0.75,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2018,
@@ -539,10 +539,10 @@
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6931471806,
-      "brierScore": 0.25,
+      "logLoss": 0.6951178059,
+      "brierScore": 0.2509833736,
       "marginMae": 11.4285714286,
-      "calibrationError": 2.220446049e-16,
+      "calibrationError": 0.0313587876,
       "upsetRecall": 1.0,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2018,
@@ -550,263 +550,263 @@
       "baselineDetail": null
     },
     {
-      "logLoss": 0.609007281,
-      "brierScore": 0.2001163118,
-      "marginMae": 8.8484001397,
-      "calibrationError": 0.0628698142,
-      "upsetRecall": 0.05,
+      "logLoss": 0.6120318757,
+      "brierScore": 0.2014363552,
+      "marginMae": 8.8926478913,
+      "calibrationError": 0.0674065468,
+      "upsetRecall": 0.6,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2018,
       "model": "best_single_source_power",
       "baselineDetail": "kenpom_badj_em_power_diff"
     },
     {
-      "logLoss": 0.7749926106,
-      "brierScore": 0.2429505947,
-      "marginMae": 9.9114025824,
-      "calibrationError": 0.1469809706,
-      "upsetRecall": 0.05,
+      "logLoss": 0.8135504181,
+      "brierScore": 0.2506983553,
+      "marginMae": 10.0201234688,
+      "calibrationError": 0.1542998281,
+      "upsetRecall": 0.2,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2018,
       "model": "current_stack_compat",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.490111173,
-      "brierScore": 0.1690426745,
-      "marginMae": 9.9927646835,
-      "calibrationError": 0.0664007454,
-      "upsetRecall": 0.25,
-      "meanCalibrationShift": 0.0,
-      "holdoutSeason": 2019,
-      "model": "candidate_stack",
-      "baselineDetail": null
-    },
-    {
-      "logLoss": 0.5082474132,
-      "brierScore": 0.1785278171,
-      "marginMae": 9.9561066245,
-      "calibrationError": 0.0521692113,
-      "upsetRecall": 0.3,
-      "meanCalibrationShift": 0.0,
-      "holdoutSeason": 2019,
-      "model": "optimized_candidate_stack",
-      "baselineDetail": null
-    },
-    {
-      "logLoss": 0.5205884233,
-      "brierScore": 0.1831014427,
-      "marginMae": 10.0960098182,
-      "calibrationError": 0.0454809725,
-      "upsetRecall": 0.3,
-      "meanCalibrationShift": 0.0296622106,
-      "holdoutSeason": 2019,
-      "model": "gbm_distilled_candidate_stack",
-      "baselineDetail": null
-    },
-    {
-      "logLoss": 0.5365707781,
-      "brierScore": 0.1873322673,
-      "marginMae": 10.2621868256,
-      "calibrationError": 0.0344386236,
-      "upsetRecall": 0.25,
-      "meanCalibrationShift": 0.0294123778,
-      "holdoutSeason": 2019,
-      "model": "enhanced_candidate_stack",
-      "baselineDetail": null
-    },
-    {
-      "logLoss": 0.4864227196,
-      "brierScore": 0.168150656,
-      "marginMae": 10.0120245657,
-      "calibrationError": 0.1003822396,
-      "upsetRecall": 0.15,
-      "meanCalibrationShift": 0.0,
-      "holdoutSeason": 2019,
-      "model": "candidate_stack_with_massey_master",
-      "baselineDetail": null
-    },
-    {
-      "logLoss": 0.4964457336,
-      "brierScore": 0.1704163704,
-      "marginMae": 10.0007276416,
-      "calibrationError": 0.0719131467,
-      "upsetRecall": 0.2,
-      "meanCalibrationShift": 0.0,
-      "holdoutSeason": 2019,
-      "model": "reduced_candidate_stack",
-      "baselineDetail": null
-    },
-    {
-      "logLoss": 0.5114784134,
-      "brierScore": 0.1753628077,
-      "marginMae": 10.0454167201,
-      "calibrationError": 0.0876467324,
-      "upsetRecall": 0.0,
-      "meanCalibrationShift": 0.0,
-      "holdoutSeason": 2019,
-      "model": "seed_only_logit",
-      "baselineDetail": null
-    },
-    {
-      "logLoss": 0.5401087723,
-      "brierScore": 0.1875618316,
-      "marginMae": 10.3824150045,
-      "calibrationError": 0.0355818465,
-      "upsetRecall": 0.3,
-      "meanCalibrationShift": 0.0,
-      "holdoutSeason": 2019,
-      "model": "equal_weight_consensus",
-      "baselineDetail": null
-    },
-    {
-      "logLoss": 0.5253434311,
-      "brierScore": 0.1802145719,
-      "marginMae": 10.980545105,
-      "calibrationError": 0.0399822743,
+      "logLoss": 0.5081003943,
+      "brierScore": 0.1753693359,
+      "marginMae": 10.1290883713,
+      "calibrationError": 0.0651231148,
       "upsetRecall": 0.4,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2019,
-      "model": "best_single_source_bpi",
+      "model": "candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6931471844,
-      "brierScore": 0.2500000019,
-      "marginMae": 12.8095238095,
-      "calibrationError": 4.40771e-05,
-      "upsetRecall": 1.0,
+      "logLoss": 0.5224131696,
+      "brierScore": 0.1830162449,
+      "marginMae": 10.0888273774,
+      "calibrationError": 0.0732684682,
+      "upsetRecall": 0.5,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2019,
-      "model": "best_single_source_net",
+      "model": "optimized_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.5129928021,
-      "brierScore": 0.1796771915,
-      "marginMae": 10.0811072461,
-      "calibrationError": 0.0743204389,
-      "upsetRecall": 0.2,
-      "meanCalibrationShift": 0.0,
+      "logLoss": 0.5241658913,
+      "brierScore": 0.1847222029,
+      "marginMae": 10.2993318152,
+      "calibrationError": 0.0585145835,
+      "upsetRecall": 0.3,
+      "meanCalibrationShift": 0.0551273897,
       "holdoutSeason": 2019,
-      "model": "best_single_source_power",
-      "baselineDetail": "kenpom_badj_em_power_diff"
+      "model": "gbm_distilled_candidate_stack",
+      "baselineDetail": null
     },
     {
-      "logLoss": 0.532292431,
-      "brierScore": 0.1825840578,
-      "marginMae": 10.2543604557,
-      "calibrationError": 0.113527553,
+      "logLoss": 0.533222136,
+      "brierScore": 0.1854445702,
+      "marginMae": 10.420433208,
+      "calibrationError": 0.0381120724,
+      "upsetRecall": 0.45,
+      "meanCalibrationShift": 0.0507810843,
+      "holdoutSeason": 2019,
+      "model": "enhanced_candidate_stack",
+      "baselineDetail": null
+    },
+    {
+      "logLoss": 0.4988775512,
+      "brierScore": 0.1727793288,
+      "marginMae": 10.0957689475,
+      "calibrationError": 0.0507019787,
+      "upsetRecall": 0.5,
+      "meanCalibrationShift": 0.0,
+      "holdoutSeason": 2019,
+      "model": "candidate_stack_with_massey_master",
+      "baselineDetail": null
+    },
+    {
+      "logLoss": 0.5100324971,
+      "brierScore": 0.1759993618,
+      "marginMae": 10.1654590793,
+      "calibrationError": 0.0556616066,
+      "upsetRecall": 0.3,
+      "meanCalibrationShift": 0.0,
+      "holdoutSeason": 2019,
+      "model": "reduced_candidate_stack",
+      "baselineDetail": null
+    },
+    {
+      "logLoss": 0.5164911722,
+      "brierScore": 0.1768283139,
+      "marginMae": 10.1361665237,
+      "calibrationError": 0.0643441835,
       "upsetRecall": 0.45,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2019,
+      "model": "seed_only_logit",
+      "baselineDetail": null
+    },
+    {
+      "logLoss": 0.5418960535,
+      "brierScore": 0.1886973855,
+      "marginMae": 10.3619752913,
+      "calibrationError": 0.072158404,
+      "upsetRecall": 0.65,
+      "meanCalibrationShift": 0.0,
+      "holdoutSeason": 2019,
+      "model": "equal_weight_consensus",
+      "baselineDetail": null
+    },
+    {
+      "logLoss": 0.5272811457,
+      "brierScore": 0.1808022264,
+      "marginMae": 10.7860391946,
+      "calibrationError": 0.0540197022,
+      "upsetRecall": 0.65,
+      "meanCalibrationShift": 0.0,
+      "holdoutSeason": 2019,
+      "model": "best_single_source_bpi",
+      "baselineDetail": null
+    },
+    {
+      "logLoss": 0.695367779,
+      "brierScore": 0.2511078373,
+      "marginMae": 12.8095238095,
+      "calibrationError": 0.0332841903,
+      "upsetRecall": 1.0,
+      "meanCalibrationShift": 0.0,
+      "holdoutSeason": 2019,
+      "model": "best_single_source_net",
+      "baselineDetail": null
+    },
+    {
+      "logLoss": 0.5180157656,
+      "brierScore": 0.181526639,
+      "marginMae": 10.1128034169,
+      "calibrationError": 0.055549117,
+      "upsetRecall": 0.65,
+      "meanCalibrationShift": 0.0,
+      "holdoutSeason": 2019,
+      "model": "best_single_source_power",
+      "baselineDetail": "kenpom_badj_em_power_diff"
+    },
+    {
+      "logLoss": 0.5611327363,
+      "brierScore": 0.1952921687,
+      "marginMae": 10.4586744742,
+      "calibrationError": 0.1016173213,
+      "upsetRecall": 0.75,
+      "meanCalibrationShift": 0.0,
+      "holdoutSeason": 2019,
       "model": "current_stack_compat",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6897036929,
-      "brierScore": 0.2222342961,
-      "marginMae": 10.2656785797,
-      "calibrationError": 0.1757842462,
-      "upsetRecall": 0.1052631579,
+      "logLoss": 0.6750923049,
+      "brierScore": 0.2196505475,
+      "marginMae": 10.3155708132,
+      "calibrationError": 0.1301723105,
+      "upsetRecall": 0.2105263158,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2021,
       "model": "candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6301696502,
-      "brierScore": 0.2055744705,
-      "marginMae": 10.4019542344,
-      "calibrationError": 0.0875879538,
-      "upsetRecall": 0.2105263158,
+      "logLoss": 0.6198399302,
+      "brierScore": 0.2054756564,
+      "marginMae": 10.4067394234,
+      "calibrationError": 0.0712989243,
+      "upsetRecall": 0.3684210526,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2021,
       "model": "optimized_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.5777148211,
-      "brierScore": 0.1961936078,
-      "marginMae": 10.3286500126,
-      "calibrationError": 0.0470009457,
-      "upsetRecall": 0.3157894737,
-      "meanCalibrationShift": 0.0319596015,
+      "logLoss": 0.5809926989,
+      "brierScore": 0.197430357,
+      "marginMae": 10.3401061841,
+      "calibrationError": 0.0679416985,
+      "upsetRecall": 0.3684210526,
+      "meanCalibrationShift": 0.0517892729,
       "holdoutSeason": 2021,
       "model": "gbm_distilled_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.576208514,
-      "brierScore": 0.1959817413,
-      "marginMae": 10.4173295679,
-      "calibrationError": 0.0359919194,
-      "upsetRecall": 0.3684210526,
-      "meanCalibrationShift": 0.0303738904,
+      "logLoss": 0.5788125735,
+      "brierScore": 0.1962256395,
+      "marginMae": 10.4543758148,
+      "calibrationError": 0.0497286127,
+      "upsetRecall": 0.1578947368,
+      "meanCalibrationShift": 0.0499886734,
       "holdoutSeason": 2021,
       "model": "enhanced_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.7348340308,
-      "brierScore": 0.2329713137,
-      "marginMae": 10.5397463063,
-      "calibrationError": 0.1690037318,
-      "upsetRecall": 0.0526315789,
+      "logLoss": 0.7188820809,
+      "brierScore": 0.2290971773,
+      "marginMae": 10.6359720643,
+      "calibrationError": 0.1532209633,
+      "upsetRecall": 0.2105263158,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2021,
       "model": "candidate_stack_with_massey_master",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6524143107,
-      "brierScore": 0.2223881607,
-      "marginMae": 10.3526919669,
-      "calibrationError": 0.1568940646,
-      "upsetRecall": 0.0526315789,
+      "logLoss": 0.6255778864,
+      "brierScore": 0.2140708696,
+      "marginMae": 10.3709909558,
+      "calibrationError": 0.0985085087,
+      "upsetRecall": 0.3157894737,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2021,
       "model": "reduced_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.666749623,
-      "brierScore": 0.2305589849,
-      "marginMae": 11.244187585,
-      "calibrationError": 0.1412498628,
-      "upsetRecall": 0.0,
+      "logLoss": 0.6586746997,
+      "brierScore": 0.2296821269,
+      "marginMae": 11.2604694644,
+      "calibrationError": 0.1034354675,
+      "upsetRecall": 0.0526315789,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2021,
       "model": "seed_only_logit",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.710035523,
-      "brierScore": 0.2178583251,
-      "marginMae": 11.119562786,
-      "calibrationError": 0.0824831857,
-      "upsetRecall": 0.2631578947,
+      "logLoss": 0.7064358601,
+      "brierScore": 0.2181737484,
+      "marginMae": 11.0882252063,
+      "calibrationError": 0.0943106953,
+      "upsetRecall": 0.3684210526,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2021,
       "model": "equal_weight_consensus",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6765578336,
-      "brierScore": 0.2057283045,
-      "marginMae": 10.7688662723,
-      "calibrationError": 0.0769506612,
-      "upsetRecall": 0.4210526316,
+      "logLoss": 0.6794448632,
+      "brierScore": 0.206924375,
+      "marginMae": 10.7723847306,
+      "calibrationError": 0.0935840729,
+      "upsetRecall": 0.4736842105,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2021,
       "model": "best_single_source_bpi",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6931473739,
-      "brierScore": 0.2500000967,
-      "marginMae": 10.5477976809,
-      "calibrationError": 0.0003109501,
+      "logLoss": 0.6955391741,
+      "brierScore": 0.2511931405,
+      "marginMae": 10.5797824672,
+      "calibrationError": 0.0345418663,
       "upsetRecall": 1.0,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2021,
@@ -814,120 +814,120 @@
       "baselineDetail": null
     },
     {
-      "logLoss": 0.5877710726,
-      "brierScore": 0.200276078,
-      "marginMae": 10.2552233311,
-      "calibrationError": 0.1037100248,
-      "upsetRecall": 0.2105263158,
+      "logLoss": 0.5832350015,
+      "brierScore": 0.1992634051,
+      "marginMae": 10.3169412381,
+      "calibrationError": 0.0748903672,
+      "upsetRecall": 0.5263157895,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2021,
       "model": "best_single_source_power",
       "baselineDetail": "kenpom_badj_em_power_diff"
     },
     {
-      "logLoss": 0.7091860297,
-      "brierScore": 0.2317026697,
-      "marginMae": 11.0184550629,
-      "calibrationError": 0.1560198401,
-      "upsetRecall": 0.0526315789,
+      "logLoss": 0.6864507424,
+      "brierScore": 0.2282888656,
+      "marginMae": 10.9817914636,
+      "calibrationError": 0.1147266586,
+      "upsetRecall": 0.1578947368,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2021,
       "model": "current_stack_compat",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6954241226,
-      "brierScore": 0.2278263629,
-      "marginMae": 10.4598662676,
-      "calibrationError": 0.1454253047,
-      "upsetRecall": 0.1428571429,
+      "logLoss": 0.6860312724,
+      "brierScore": 0.2280441635,
+      "marginMae": 10.4924552985,
+      "calibrationError": 0.1181653836,
+      "upsetRecall": 0.2380952381,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2022,
       "model": "candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6988390416,
-      "brierScore": 0.2330294277,
-      "marginMae": 10.5233760397,
-      "calibrationError": 0.1306968786,
-      "upsetRecall": 0.2857142857,
+      "logLoss": 0.6892136848,
+      "brierScore": 0.2333138358,
+      "marginMae": 10.5027239516,
+      "calibrationError": 0.1439533498,
+      "upsetRecall": 0.380952381,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2022,
       "model": "optimized_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6894974865,
-      "brierScore": 0.2324306862,
-      "marginMae": 10.4432062796,
-      "calibrationError": 0.1154216342,
-      "upsetRecall": 0.1904761905,
-      "meanCalibrationShift": 0.0359291449,
+      "logLoss": 0.6734075539,
+      "brierScore": 0.2268520921,
+      "marginMae": 10.4147626456,
+      "calibrationError": 0.0858615278,
+      "upsetRecall": 0.380952381,
+      "meanCalibrationShift": 0.0541229985,
       "holdoutSeason": 2022,
       "model": "gbm_distilled_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6723948658,
-      "brierScore": 0.2239099216,
-      "marginMae": 10.485361402,
-      "calibrationError": 0.1122353499,
-      "upsetRecall": 0.1904761905,
-      "meanCalibrationShift": 0.0368106353,
+      "logLoss": 0.6916168602,
+      "brierScore": 0.2316961316,
+      "marginMae": 10.4494331333,
+      "calibrationError": 0.0994355024,
+      "upsetRecall": 0.3333333333,
+      "meanCalibrationShift": 0.0556115791,
       "holdoutSeason": 2022,
       "model": "enhanced_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6832013949,
-      "brierScore": 0.2239641694,
-      "marginMae": 10.3650904772,
-      "calibrationError": 0.119247771,
-      "upsetRecall": 0.1428571429,
+      "logLoss": 0.6898907039,
+      "brierScore": 0.2289480072,
+      "marginMae": 10.3757787571,
+      "calibrationError": 0.1315111303,
+      "upsetRecall": 0.1904761905,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2022,
       "model": "candidate_stack_with_massey_master",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6879734885,
-      "brierScore": 0.2259922682,
-      "marginMae": 10.508082407,
-      "calibrationError": 0.1131283741,
-      "upsetRecall": 0.0952380952,
+      "logLoss": 0.677654947,
+      "brierScore": 0.2233848007,
+      "marginMae": 10.4976867219,
+      "calibrationError": 0.1102047781,
+      "upsetRecall": 0.2380952381,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2022,
       "model": "reduced_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6095584654,
-      "brierScore": 0.2116768289,
-      "marginMae": 10.4690224997,
-      "calibrationError": 0.0708003263,
-      "upsetRecall": 0.0,
+      "logLoss": 0.6054711495,
+      "brierScore": 0.2105929092,
+      "marginMae": 10.4862340136,
+      "calibrationError": 0.0585284336,
+      "upsetRecall": 0.1904761905,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2022,
       "model": "seed_only_logit",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.7104738422,
-      "brierScore": 0.2397727604,
-      "marginMae": 10.6817320477,
-      "calibrationError": 0.1330425637,
-      "upsetRecall": 0.2380952381,
+      "logLoss": 0.6968107197,
+      "brierScore": 0.2380469135,
+      "marginMae": 10.6350581475,
+      "calibrationError": 0.1141341318,
+      "upsetRecall": 0.3333333333,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2022,
       "model": "equal_weight_consensus",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.678847345,
-      "brierScore": 0.2297962852,
-      "marginMae": 10.3992547734,
-      "calibrationError": 0.1062035796,
+      "logLoss": 0.6726594474,
+      "brierScore": 0.2287709795,
+      "marginMae": 10.3956266597,
+      "calibrationError": 0.1133452682,
       "upsetRecall": 0.3333333333,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2022,
@@ -935,395 +935,395 @@
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6308309432,
-      "brierScore": 0.2200316918,
-      "marginMae": 10.3735380686,
-      "calibrationError": 0.0695858694,
-      "upsetRecall": 0.2857142857,
+      "logLoss": 0.6330294401,
+      "brierScore": 0.2211231162,
+      "marginMae": 10.3761142241,
+      "calibrationError": 0.0741100719,
+      "upsetRecall": 0.619047619,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2022,
       "model": "best_single_source_net",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.704857771,
-      "brierScore": 0.232295938,
-      "marginMae": 10.5765806094,
-      "calibrationError": 0.1514889343,
-      "upsetRecall": 0.380952381,
+      "logLoss": 0.6970371615,
+      "brierScore": 0.232822733,
+      "marginMae": 10.5362347481,
+      "calibrationError": 0.1242966165,
+      "upsetRecall": 0.4761904762,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2022,
       "model": "best_single_source_power",
       "baselineDetail": "kenpom_badj_em_power_diff"
     },
     {
-      "logLoss": 0.6700070697,
-      "brierScore": 0.2252290087,
-      "marginMae": 10.2101479792,
-      "calibrationError": 0.1509456574,
-      "upsetRecall": 0.0952380952,
+      "logLoss": 0.663819308,
+      "brierScore": 0.2234242391,
+      "marginMae": 10.2033973287,
+      "calibrationError": 0.1590720739,
+      "upsetRecall": 0.1904761905,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2022,
       "model": "current_stack_compat",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6230197188,
-      "brierScore": 0.2078628539,
-      "marginMae": 9.5010607534,
-      "calibrationError": 0.1175675111,
-      "upsetRecall": 0.0,
+      "logLoss": 0.6279919469,
+      "brierScore": 0.2117945398,
+      "marginMae": 9.6068186452,
+      "calibrationError": 0.0872778747,
+      "upsetRecall": 0.3684210526,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2023,
       "model": "candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6368731112,
-      "brierScore": 0.2107761334,
-      "marginMae": 9.5166117873,
-      "calibrationError": 0.069075009,
-      "upsetRecall": 0.0526315789,
+      "logLoss": 0.6439912452,
+      "brierScore": 0.2139883518,
+      "marginMae": 9.5729054634,
+      "calibrationError": 0.0962508752,
+      "upsetRecall": 0.3684210526,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2023,
       "model": "optimized_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6327265044,
-      "brierScore": 0.212742272,
-      "marginMae": 9.4761595889,
-      "calibrationError": 0.0658669275,
-      "upsetRecall": 0.1578947368,
-      "meanCalibrationShift": 0.0266110069,
+      "logLoss": 0.6289594047,
+      "brierScore": 0.2101344848,
+      "marginMae": 9.5588520311,
+      "calibrationError": 0.0441925492,
+      "upsetRecall": 0.0,
+      "meanCalibrationShift": 0.0541485775,
       "holdoutSeason": 2023,
       "model": "gbm_distilled_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6316210044,
-      "brierScore": 0.2116081024,
-      "marginMae": 9.4794878938,
-      "calibrationError": 0.0511770912,
-      "upsetRecall": 0.2631578947,
-      "meanCalibrationShift": 0.0335565192,
+      "logLoss": 0.6300554532,
+      "brierScore": 0.2102956562,
+      "marginMae": 9.5667883991,
+      "calibrationError": 0.0754404732,
+      "upsetRecall": 0.1578947368,
+      "meanCalibrationShift": 0.0534454795,
       "holdoutSeason": 2023,
       "model": "enhanced_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6196274242,
-      "brierScore": 0.2066685049,
-      "marginMae": 9.664741266,
-      "calibrationError": 0.0981830675,
-      "upsetRecall": 0.0,
-      "meanCalibrationShift": 0.0,
-      "holdoutSeason": 2023,
-      "model": "candidate_stack_with_massey_master",
-      "baselineDetail": null
-    },
-    {
-      "logLoss": 0.6291356964,
-      "brierScore": 0.2038451918,
-      "marginMae": 9.3079746556,
-      "calibrationError": 0.0406477724,
-      "upsetRecall": 0.0526315789,
-      "meanCalibrationShift": 0.0,
-      "holdoutSeason": 2023,
-      "model": "reduced_candidate_stack",
-      "baselineDetail": null
-    },
-    {
-      "logLoss": 0.6285583627,
-      "brierScore": 0.2065706159,
-      "marginMae": 8.8797108962,
-      "calibrationError": 0.0555106148,
-      "upsetRecall": 0.0,
-      "meanCalibrationShift": 0.0,
-      "holdoutSeason": 2023,
-      "model": "seed_only_logit",
-      "baselineDetail": null
-    },
-    {
-      "logLoss": 0.6470510486,
-      "brierScore": 0.2146632786,
-      "marginMae": 9.8925165026,
-      "calibrationError": 0.1050584603,
-      "upsetRecall": 0.1052631579,
-      "meanCalibrationShift": 0.0,
-      "holdoutSeason": 2023,
-      "model": "equal_weight_consensus",
-      "baselineDetail": null
-    },
-    {
-      "logLoss": 0.6073174792,
-      "brierScore": 0.2058681374,
-      "marginMae": 10.0761329962,
-      "calibrationError": 0.071520571,
+      "logLoss": 0.6212547392,
+      "brierScore": 0.2086023585,
+      "marginMae": 9.7932548248,
+      "calibrationError": 0.0736349975,
       "upsetRecall": 0.2105263158,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2023,
+      "model": "candidate_stack_with_massey_master",
+      "baselineDetail": null
+    },
+    {
+      "logLoss": 0.6334098082,
+      "brierScore": 0.2063478529,
+      "marginMae": 9.4063835608,
+      "calibrationError": 0.1047438061,
+      "upsetRecall": 0.4736842105,
+      "meanCalibrationShift": 0.0,
+      "holdoutSeason": 2023,
+      "model": "reduced_candidate_stack",
+      "baselineDetail": null
+    },
+    {
+      "logLoss": 0.6359595368,
+      "brierScore": 0.2114378164,
+      "marginMae": 9.038144648,
+      "calibrationError": 0.0713766519,
+      "upsetRecall": 0.2631578947,
+      "meanCalibrationShift": 0.0,
+      "holdoutSeason": 2023,
+      "model": "seed_only_logit",
+      "baselineDetail": null
+    },
+    {
+      "logLoss": 0.6497763125,
+      "brierScore": 0.2161340506,
+      "marginMae": 9.9268022086,
+      "calibrationError": 0.0892911315,
+      "upsetRecall": 0.3157894737,
+      "meanCalibrationShift": 0.0,
+      "holdoutSeason": 2023,
+      "model": "equal_weight_consensus",
+      "baselineDetail": null
+    },
+    {
+      "logLoss": 0.6079675928,
+      "brierScore": 0.2071093783,
+      "marginMae": 10.0620113364,
+      "calibrationError": 0.0759122847,
+      "upsetRecall": 0.4210526316,
+      "meanCalibrationShift": 0.0,
+      "holdoutSeason": 2023,
       "model": "best_single_source_bpi",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.612080845,
-      "brierScore": 0.2110157688,
-      "marginMae": 10.3296468912,
-      "calibrationError": 0.0796281178,
-      "upsetRecall": 0.0526315789,
+      "logLoss": 0.6183435096,
+      "brierScore": 0.2139845094,
+      "marginMae": 10.330429709,
+      "calibrationError": 0.0745550965,
+      "upsetRecall": 0.5789473684,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2023,
       "model": "best_single_source_net",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.6340157019,
-      "brierScore": 0.2096434759,
-      "marginMae": 9.5789966305,
-      "calibrationError": 0.0663617601,
-      "upsetRecall": 0.0526315789,
+      "logLoss": 0.6360581086,
+      "brierScore": 0.2107253445,
+      "marginMae": 9.6004341657,
+      "calibrationError": 0.0737286931,
+      "upsetRecall": 0.5263157895,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2023,
       "model": "best_single_source_power",
       "baselineDetail": "kenpom_badj_em_power_diff"
     },
     {
-      "logLoss": 0.6381853938,
-      "brierScore": 0.2078078802,
-      "marginMae": 9.3225125951,
-      "calibrationError": 0.0983834962,
-      "upsetRecall": 0.0526315789,
+      "logLoss": 0.6461652716,
+      "brierScore": 0.2130400747,
+      "marginMae": 9.4442435461,
+      "calibrationError": 0.108967166,
+      "upsetRecall": 0.3157894737,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2023,
       "model": "current_stack_compat",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.5361244756,
-      "brierScore": 0.1814237741,
-      "marginMae": 10.2073441377,
-      "calibrationError": 0.0321428451,
-      "upsetRecall": 0.1052631579,
-      "meanCalibrationShift": 0.0,
-      "holdoutSeason": 2024,
-      "model": "candidate_stack",
-      "baselineDetail": null
-    },
-    {
-      "logLoss": 0.5395481122,
-      "brierScore": 0.1827148619,
-      "marginMae": 10.0159403853,
-      "calibrationError": 0.0660989702,
-      "upsetRecall": 0.3684210526,
-      "meanCalibrationShift": 0.0,
-      "holdoutSeason": 2024,
-      "model": "optimized_candidate_stack",
-      "baselineDetail": null
-    },
-    {
-      "logLoss": 0.5353426176,
-      "brierScore": 0.1815678025,
-      "marginMae": 10.146277311,
-      "calibrationError": 0.0428466204,
-      "upsetRecall": 0.1052631579,
-      "meanCalibrationShift": 0.0199215165,
-      "holdoutSeason": 2024,
-      "model": "gbm_distilled_candidate_stack",
-      "baselineDetail": null
-    },
-    {
-      "logLoss": 0.5528804562,
-      "brierScore": 0.1859827803,
-      "marginMae": 10.118088462,
-      "calibrationError": 0.0509954796,
-      "upsetRecall": 0.1052631579,
-      "meanCalibrationShift": 0.0275925253,
-      "holdoutSeason": 2024,
-      "model": "enhanced_candidate_stack",
-      "baselineDetail": null
-    },
-    {
-      "logLoss": 0.543479554,
-      "brierScore": 0.1841256948,
-      "marginMae": 10.5197821546,
-      "calibrationError": 0.0656318533,
-      "upsetRecall": 0.1052631579,
-      "meanCalibrationShift": 0.0,
-      "holdoutSeason": 2024,
-      "model": "candidate_stack_with_massey_master",
-      "baselineDetail": null
-    },
-    {
-      "logLoss": 0.5417951419,
-      "brierScore": 0.1835975832,
-      "marginMae": 9.973110705,
-      "calibrationError": 0.0838423045,
-      "upsetRecall": 0.1052631579,
-      "meanCalibrationShift": 0.0,
-      "holdoutSeason": 2024,
-      "model": "reduced_candidate_stack",
-      "baselineDetail": null
-    },
-    {
-      "logLoss": 0.554531495,
-      "brierScore": 0.1894035786,
-      "marginMae": 11.2850653012,
-      "calibrationError": 0.0225076774,
-      "upsetRecall": 0.0,
-      "meanCalibrationShift": 0.0,
-      "holdoutSeason": 2024,
-      "model": "seed_only_logit",
-      "baselineDetail": null
-    },
-    {
-      "logLoss": 0.562650299,
-      "brierScore": 0.1903872285,
-      "marginMae": 11.1174178362,
-      "calibrationError": 0.0474540193,
-      "upsetRecall": 0.2631578947,
-      "meanCalibrationShift": 0.0,
-      "holdoutSeason": 2024,
-      "model": "equal_weight_consensus",
-      "baselineDetail": null
-    },
-    {
-      "logLoss": 0.5532751558,
-      "brierScore": 0.18610033,
-      "marginMae": 10.8650817108,
-      "calibrationError": 0.0620118655,
-      "upsetRecall": 0.1052631579,
-      "meanCalibrationShift": 0.0,
-      "holdoutSeason": 2024,
-      "model": "best_single_source_bpi",
-      "baselineDetail": null
-    },
-    {
-      "logLoss": 0.5837354767,
-      "brierScore": 0.1986241953,
-      "marginMae": 11.1628771184,
-      "calibrationError": 0.1175028746,
+      "logLoss": 0.5457898205,
+      "brierScore": 0.1851265112,
+      "marginMae": 10.4145423997,
+      "calibrationError": 0.0679648775,
       "upsetRecall": 0.4736842105,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2024,
+      "model": "candidate_stack",
+      "baselineDetail": null
+    },
+    {
+      "logLoss": 0.5411959125,
+      "brierScore": 0.1839773901,
+      "marginMae": 10.2244766573,
+      "calibrationError": 0.0657331643,
+      "upsetRecall": 0.5263157895,
+      "meanCalibrationShift": 0.0,
+      "holdoutSeason": 2024,
+      "model": "optimized_candidate_stack",
+      "baselineDetail": null
+    },
+    {
+      "logLoss": 0.5445607827,
+      "brierScore": 0.1819328468,
+      "marginMae": 10.3710957527,
+      "calibrationError": 0.0452684457,
+      "upsetRecall": 0.5263157895,
+      "meanCalibrationShift": 0.0509833092,
+      "holdoutSeason": 2024,
+      "model": "gbm_distilled_candidate_stack",
+      "baselineDetail": null
+    },
+    {
+      "logLoss": 0.5442425525,
+      "brierScore": 0.1842601065,
+      "marginMae": 10.361423773,
+      "calibrationError": 0.0576480885,
+      "upsetRecall": 0.4736842105,
+      "meanCalibrationShift": 0.0520520165,
+      "holdoutSeason": 2024,
+      "model": "enhanced_candidate_stack",
+      "baselineDetail": null
+    },
+    {
+      "logLoss": 0.548242134,
+      "brierScore": 0.1854239409,
+      "marginMae": 10.6976305368,
+      "calibrationError": 0.0650252742,
+      "upsetRecall": 0.5263157895,
+      "meanCalibrationShift": 0.0,
+      "holdoutSeason": 2024,
+      "model": "candidate_stack_with_massey_master",
+      "baselineDetail": null
+    },
+    {
+      "logLoss": 0.541715658,
+      "brierScore": 0.1833069102,
+      "marginMae": 10.1699597531,
+      "calibrationError": 0.0769669231,
+      "upsetRecall": 0.4210526316,
+      "meanCalibrationShift": 0.0,
+      "holdoutSeason": 2024,
+      "model": "reduced_candidate_stack",
+      "baselineDetail": null
+    },
+    {
+      "logLoss": 0.5617786447,
+      "brierScore": 0.1923029318,
+      "marginMae": 11.5424531798,
+      "calibrationError": 0.0533803032,
+      "upsetRecall": 0.2631578947,
+      "meanCalibrationShift": 0.0,
+      "holdoutSeason": 2024,
+      "model": "seed_only_logit",
+      "baselineDetail": null
+    },
+    {
+      "logLoss": 0.5652381991,
+      "brierScore": 0.1922789706,
+      "marginMae": 11.3141720025,
+      "calibrationError": 0.0746806295,
+      "upsetRecall": 0.5263157895,
+      "meanCalibrationShift": 0.0,
+      "holdoutSeason": 2024,
+      "model": "equal_weight_consensus",
+      "baselineDetail": null
+    },
+    {
+      "logLoss": 0.5539041257,
+      "brierScore": 0.1875049814,
+      "marginMae": 10.9806447134,
+      "calibrationError": 0.0606094704,
+      "upsetRecall": 0.4210526316,
+      "meanCalibrationShift": 0.0,
+      "holdoutSeason": 2024,
+      "model": "best_single_source_bpi",
+      "baselineDetail": null
+    },
+    {
+      "logLoss": 0.5920831709,
+      "brierScore": 0.2026251807,
+      "marginMae": 11.2504147848,
+      "calibrationError": 0.0852493946,
+      "upsetRecall": 0.6315789474,
+      "meanCalibrationShift": 0.0,
+      "holdoutSeason": 2024,
       "model": "best_single_source_net",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.5563776314,
-      "brierScore": 0.1897544957,
-      "marginMae": 9.9013771057,
-      "calibrationError": 0.076984423,
-      "upsetRecall": 0.3684210526,
+      "logLoss": 0.5563867645,
+      "brierScore": 0.1904892777,
+      "marginMae": 10.130524539,
+      "calibrationError": 0.0809030577,
+      "upsetRecall": 0.5789473684,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2024,
       "model": "best_single_source_power",
       "baselineDetail": "kenpom_badj_em_power_diff"
     },
     {
-      "logLoss": 0.5460822679,
-      "brierScore": 0.1878909302,
-      "marginMae": 10.7085733625,
-      "calibrationError": 0.0514617696,
-      "upsetRecall": 0.1052631579,
+      "logLoss": 0.5570960129,
+      "brierScore": 0.191774631,
+      "marginMae": 10.9210968143,
+      "calibrationError": 0.0931536716,
+      "upsetRecall": 0.2631578947,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2024,
       "model": "current_stack_compat",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.4708269926,
-      "brierScore": 0.1522198909,
-      "marginMae": 8.5222472216,
-      "calibrationError": 0.1210529623,
-      "upsetRecall": 0.0909090909,
+      "logLoss": 0.4938057679,
+      "brierScore": 0.1618047795,
+      "marginMae": 8.722597677,
+      "calibrationError": 0.1503974414,
+      "upsetRecall": 0.4545454545,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2025,
       "model": "candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.4523244364,
-      "brierScore": 0.147952334,
-      "marginMae": 8.5334146553,
-      "calibrationError": 0.0670924063,
-      "upsetRecall": 0.2727272727,
+      "logLoss": 0.4697738486,
+      "brierScore": 0.1555016821,
+      "marginMae": 8.7169165197,
+      "calibrationError": 0.1094245874,
+      "upsetRecall": 0.5454545455,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2025,
       "model": "optimized_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.4652658667,
-      "brierScore": 0.1537224972,
-      "marginMae": 8.6241623323,
-      "calibrationError": 0.1036354152,
+      "logLoss": 0.4631641047,
+      "brierScore": 0.1530168453,
+      "marginMae": 8.8029171016,
+      "calibrationError": 0.118879095,
       "upsetRecall": 0.1818181818,
-      "meanCalibrationShift": 0.0356318482,
+      "meanCalibrationShift": 0.0554642727,
       "holdoutSeason": 2025,
       "model": "gbm_distilled_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.4542828872,
-      "brierScore": 0.1479566885,
-      "marginMae": 8.6441130267,
-      "calibrationError": 0.0881139321,
+      "logLoss": 0.4588625334,
+      "brierScore": 0.1498313849,
+      "marginMae": 8.8070543794,
+      "calibrationError": 0.0941950331,
       "upsetRecall": 0.3636363636,
-      "meanCalibrationShift": 0.0282143383,
+      "meanCalibrationShift": 0.0534774818,
       "holdoutSeason": 2025,
       "model": "enhanced_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.4643350516,
-      "brierScore": 0.1506099404,
-      "marginMae": 8.5219043357,
-      "calibrationError": 0.1119904625,
-      "upsetRecall": 0.0909090909,
+      "logLoss": 0.4865746215,
+      "brierScore": 0.1596315859,
+      "marginMae": 8.6615146818,
+      "calibrationError": 0.1243072656,
+      "upsetRecall": 0.3636363636,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2025,
       "model": "candidate_stack_with_massey_master",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.455443313,
-      "brierScore": 0.1501841188,
-      "marginMae": 8.5872245435,
-      "calibrationError": 0.1166258767,
-      "upsetRecall": 0.0909090909,
+      "logLoss": 0.4681806625,
+      "brierScore": 0.1550777021,
+      "marginMae": 8.7634974405,
+      "calibrationError": 0.1163323585,
+      "upsetRecall": 0.5454545455,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2025,
       "model": "reduced_candidate_stack",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.4811305446,
-      "brierScore": 0.1578509012,
-      "marginMae": 9.1087011142,
-      "calibrationError": 0.1179232113,
-      "upsetRecall": 0.0,
+      "logLoss": 0.5078823128,
+      "brierScore": 0.1693406788,
+      "marginMae": 9.3295923444,
+      "calibrationError": 0.131834313,
+      "upsetRecall": 0.2727272727,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2025,
       "model": "seed_only_logit",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.4937863669,
-      "brierScore": 0.1641606992,
-      "marginMae": 9.4059590115,
-      "calibrationError": 0.0679848154,
-      "upsetRecall": 0.1818181818,
+      "logLoss": 0.5092799749,
+      "brierScore": 0.1705584263,
+      "marginMae": 9.5345547078,
+      "calibrationError": 0.0891601275,
+      "upsetRecall": 0.5454545455,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2025,
       "model": "equal_weight_consensus",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.4946138344,
-      "brierScore": 0.1641337895,
-      "marginMae": 9.6510681641,
-      "calibrationError": 0.0484895945,
+      "logLoss": 0.5075052558,
+      "brierScore": 0.1699053217,
+      "marginMae": 9.7641698407,
+      "calibrationError": 0.0939980001,
       "upsetRecall": 0.2727272727,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2025,
@@ -1331,33 +1331,33 @@
       "baselineDetail": null
     },
     {
-      "logLoss": 0.5630849062,
-      "brierScore": 0.1880549627,
-      "marginMae": 9.6985834268,
-      "calibrationError": 0.1632051796,
-      "upsetRecall": 0.2727272727,
+      "logLoss": 0.5816013191,
+      "brierScore": 0.1970858956,
+      "marginMae": 9.8532593336,
+      "calibrationError": 0.1307221629,
+      "upsetRecall": 0.3636363636,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2025,
       "model": "best_single_source_net",
       "baselineDetail": null
     },
     {
-      "logLoss": 0.45998961,
-      "brierScore": 0.1530107079,
-      "marginMae": 8.7648431622,
-      "calibrationError": 0.077256118,
-      "upsetRecall": 0.2727272727,
+      "logLoss": 0.4738357519,
+      "brierScore": 0.1586467581,
+      "marginMae": 8.9010596564,
+      "calibrationError": 0.098112067,
+      "upsetRecall": 0.4545454545,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2025,
       "model": "best_single_source_power",
       "baselineDetail": "kenpom_badj_em_power_diff"
     },
     {
-      "logLoss": 0.4588433965,
-      "brierScore": 0.1516652358,
-      "marginMae": 8.7966342868,
-      "calibrationError": 0.0972021202,
-      "upsetRecall": 0.0909090909,
+      "logLoss": 0.480546239,
+      "brierScore": 0.1608159007,
+      "marginMae": 8.9808684365,
+      "calibrationError": 0.111526871,
+      "upsetRecall": 0.1818181818,
       "meanCalibrationShift": 0.0,
       "holdoutSeason": 2025,
       "model": "current_stack_compat",
@@ -1368,429 +1368,429 @@
     "candidate_stack": [
       {
         "bucket": 0,
-        "count": 124,
-        "actualRate": 0.11290322580645161,
-        "probabilityRate": 0.0463112230054441
+        "count": 93,
+        "actualRate": 0.0967741935483871,
+        "probabilityRate": 0.04577345289741333
       },
       {
         "bucket": 1,
-        "count": 40,
-        "actualRate": 0.175,
-        "probabilityRate": 0.14897217944473862
+        "count": 48,
+        "actualRate": 0.16666666666666666,
+        "probabilityRate": 0.14666426517968076
       },
       {
         "bucket": 2,
-        "count": 65,
-        "actualRate": 0.26153846153846155,
-        "probabilityRate": 0.25676207763889436
+        "count": 41,
+        "actualRate": 0.24390243902439024,
+        "probabilityRate": 0.2572955422256442
       },
       {
         "bucket": 3,
-        "count": 118,
-        "actualRate": 0.3305084745762712,
-        "probabilityRate": 0.35493582584049643
+        "count": 73,
+        "actualRate": 0.2876712328767123,
+        "probabilityRate": 0.3672573597065739
       },
       {
         "bucket": 4,
-        "count": 160,
-        "actualRate": 0.43125,
-        "probabilityRate": 0.44502742149118096
+        "count": 138,
+        "actualRate": 0.36231884057971014,
+        "probabilityRate": 0.4550789219885918
       },
       {
         "bucket": 5,
-        "count": 155,
-        "actualRate": 0.567741935483871,
-        "probabilityRate": 0.5568460006726855
+        "count": 199,
+        "actualRate": 0.4824120603015075,
+        "probabilityRate": 0.5520479806850432
       },
       {
         "bucket": 6,
-        "count": 112,
-        "actualRate": 0.6696428571428571,
-        "probabilityRate": 0.6470924730246933
+        "count": 179,
+        "actualRate": 0.6536312849162011,
+        "probabilityRate": 0.6480234529050221
       },
       {
         "bucket": 7,
-        "count": 69,
-        "actualRate": 0.7536231884057971,
-        "probabilityRate": 0.7415840614073588
+        "count": 66,
+        "actualRate": 0.7121212121212122,
+        "probabilityRate": 0.7447258675406305
       },
       {
         "bucket": 8,
-        "count": 46,
-        "actualRate": 0.8478260869565217,
-        "probabilityRate": 0.8540527109361823
+        "count": 54,
+        "actualRate": 0.8333333333333334,
+        "probabilityRate": 0.8540665709273214
       },
       {
         "bucket": 9,
-        "count": 117,
-        "actualRate": 0.8803418803418803,
-        "probabilityRate": 0.9567204063265713
+        "count": 115,
+        "actualRate": 0.8695652173913043,
+        "probabilityRate": 0.957737931637618
       }
     ],
     "optimized_candidate_stack": [
       {
         "bucket": 0,
-        "count": 131,
-        "actualRate": 0.10687022900763359,
-        "probabilityRate": 0.05100205112145905
+        "count": 95,
+        "actualRate": 0.10526315789473684,
+        "probabilityRate": 0.046260194266986875
       },
       {
         "bucket": 1,
-        "count": 37,
-        "actualRate": 0.1891891891891892,
-        "probabilityRate": 0.14954492541249043
+        "count": 48,
+        "actualRate": 0.0625,
+        "probabilityRate": 0.1406357880926302
       },
       {
         "bucket": 2,
-        "count": 75,
-        "actualRate": 0.32,
-        "probabilityRate": 0.2649246131814737
+        "count": 41,
+        "actualRate": 0.2926829268292683,
+        "probabilityRate": 0.25114492831684626
       },
       {
         "bucket": 3,
-        "count": 73,
-        "actualRate": 0.3287671232876712,
-        "probabilityRate": 0.35135693144291863
+        "count": 78,
+        "actualRate": 0.3333333333333333,
+        "probabilityRate": 0.3614341071931099
       },
       {
         "bucket": 4,
-        "count": 230,
-        "actualRate": 0.4608695652173913,
-        "probabilityRate": 0.47381199375574934
+        "count": 101,
+        "actualRate": 0.33663366336633666,
+        "probabilityRate": 0.46521740086403984
       },
       {
         "bucket": 5,
-        "count": 148,
-        "actualRate": 0.5540540540540541,
-        "probabilityRate": 0.5395247855513527
+        "count": 288,
+        "actualRate": 0.5034722222222222,
+        "probabilityRate": 0.5504113605927697
       },
       {
         "bucket": 6,
-        "count": 66,
-        "actualRate": 0.6818181818181818,
-        "probabilityRate": 0.6473036354192941
+        "count": 105,
+        "actualRate": 0.6666666666666666,
+        "probabilityRate": 0.6423158601762773
       },
       {
         "bucket": 7,
-        "count": 77,
-        "actualRate": 0.7012987012987013,
-        "probabilityRate": 0.7356399901116875
+        "count": 78,
+        "actualRate": 0.6923076923076923,
+        "probabilityRate": 0.7377978583994088
       },
       {
         "bucket": 8,
-        "count": 42,
-        "actualRate": 0.8095238095238095,
-        "probabilityRate": 0.8428789260955055
+        "count": 47,
+        "actualRate": 0.7872340425531915,
+        "probabilityRate": 0.851684221777616
       },
       {
         "bucket": 9,
-        "count": 127,
-        "actualRate": 0.889763779527559,
-        "probabilityRate": 0.9501218648105473
+        "count": 125,
+        "actualRate": 0.896,
+        "probabilityRate": 0.9531854426179327
       }
     ],
     "gbm_distilled_candidate_stack": [
       {
         "bucket": 0,
-        "count": 97,
-        "actualRate": 0.08247422680412371,
-        "probabilityRate": 0.042220836875682906
+        "count": 107,
+        "actualRate": 0.09345794392523364,
+        "probabilityRate": 0.04571840387904081
       },
       {
         "bucket": 1,
-        "count": 36,
-        "actualRate": 0.1388888888888889,
-        "probabilityRate": 0.11986463581368417
+        "count": 31,
+        "actualRate": 0.0967741935483871,
+        "probabilityRate": 0.1364114857714804
       },
       {
         "bucket": 2,
-        "count": 83,
-        "actualRate": 0.26506024096385544,
-        "probabilityRate": 0.26947098873463055
+        "count": 52,
+        "actualRate": 0.23076923076923078,
+        "probabilityRate": 0.2574721993194873
       },
       {
         "bucket": 3,
-        "count": 125,
-        "actualRate": 0.336,
-        "probabilityRate": 0.367369688778037
+        "count": 151,
+        "actualRate": 0.3576158940397351,
+        "probabilityRate": 0.35878762552724003
       },
       {
         "bucket": 4,
-        "count": 227,
-        "actualRate": 0.4845814977973568,
-        "probabilityRate": 0.4774882005466486
+        "count": 192,
+        "actualRate": 0.4635416666666667,
+        "probabilityRate": 0.47849796389306326
       },
       {
         "bucket": 5,
-        "count": 110,
-        "actualRate": 0.5636363636363636,
-        "probabilityRate": 0.5581254668023821
+        "count": 125,
+        "actualRate": 0.56,
+        "probabilityRate": 0.5380079826762084
       },
       {
         "bucket": 6,
-        "count": 107,
-        "actualRate": 0.6448598130841121,
-        "probabilityRate": 0.6323133769481759
+        "count": 134,
+        "actualRate": 0.6268656716417911,
+        "probabilityRate": 0.6341456582517774
       },
       {
         "bucket": 7,
-        "count": 87,
-        "actualRate": 0.735632183908046,
-        "probabilityRate": 0.7259409010439813
+        "count": 73,
+        "actualRate": 0.7397260273972602,
+        "probabilityRate": 0.7223685385071756
       },
       {
         "bucket": 8,
-        "count": 35,
-        "actualRate": 0.8571428571428571,
-        "probabilityRate": 0.8747611204223565
+        "count": 39,
+        "actualRate": 0.8717948717948718,
+        "probabilityRate": 0.870205218135956
       },
       {
         "bucket": 9,
-        "count": 99,
-        "actualRate": 0.9191919191919192,
-        "probabilityRate": 0.9577385723835786
+        "count": 102,
+        "actualRate": 0.9117647058823529,
+        "probabilityRate": 0.9567085411459249
       }
     ],
     "enhanced_candidate_stack": [
       {
         "bucket": 0,
-        "count": 107,
-        "actualRate": 0.102803738317757,
-        "probabilityRate": 0.04736195678438917
+        "count": 103,
+        "actualRate": 0.08737864077669903,
+        "probabilityRate": 0.04455056595033237
       },
       {
         "bucket": 1,
-        "count": 35,
-        "actualRate": 0.11428571428571428,
-        "probabilityRate": 0.14180098388556378
+        "count": 43,
+        "actualRate": 0.16279069767441862,
+        "probabilityRate": 0.13243054839983728
       },
       {
         "bucket": 2,
-        "count": 71,
-        "actualRate": 0.22535211267605634,
-        "probabilityRate": 0.26272440096711874
+        "count": 42,
+        "actualRate": 0.21428571428571427,
+        "probabilityRate": 0.25562382502992137
       },
       {
         "bucket": 3,
-        "count": 90,
-        "actualRate": 0.35555555555555557,
-        "probabilityRate": 0.3641187822985799
+        "count": 153,
+        "actualRate": 0.3464052287581699,
+        "probabilityRate": 0.363764622442778
       },
       {
         "bucket": 4,
-        "count": 248,
-        "actualRate": 0.4717741935483871,
-        "probabilityRate": 0.4677432924095621
+        "count": 125,
+        "actualRate": 0.472,
+        "probabilityRate": 0.4668582179381627
       },
       {
         "bucket": 5,
-        "count": 163,
-        "actualRate": 0.5521472392638037,
-        "probabilityRate": 0.5557746062989811
+        "count": 206,
+        "actualRate": 0.5242718446601942,
+        "probabilityRate": 0.53051481997498
       },
       {
         "bucket": 6,
-        "count": 81,
-        "actualRate": 0.6419753086419753,
-        "probabilityRate": 0.6386700438410289
+        "count": 123,
+        "actualRate": 0.6341463414634146,
+        "probabilityRate": 0.622226519322216
       },
       {
         "bucket": 7,
-        "count": 72,
-        "actualRate": 0.7777777777777778,
-        "probabilityRate": 0.7379322546025255
+        "count": 55,
+        "actualRate": 0.7818181818181819,
+        "probabilityRate": 0.7324625378830677
       },
       {
         "bucket": 8,
         "count": 39,
-        "actualRate": 0.8974358974358975,
-        "probabilityRate": 0.8716138594821923
+        "actualRate": 0.8461538461538461,
+        "probabilityRate": 0.8392238166713631
       },
       {
         "bucket": 9,
-        "count": 100,
-        "actualRate": 0.9,
-        "probabilityRate": 0.9565107801886465
+        "count": 117,
+        "actualRate": 0.8888888888888888,
+        "probabilityRate": 0.9477409565030904
       }
     ],
     "candidate_stack_with_massey_master": [
       {
         "bucket": 0,
-        "count": 126,
-        "actualRate": 0.11904761904761904,
-        "probabilityRate": 0.04417217532304416
+        "count": 102,
+        "actualRate": 0.11764705882352941,
+        "probabilityRate": 0.04974063593103607
       },
       {
         "bucket": 1,
         "count": 36,
         "actualRate": 0.19444444444444445,
-        "probabilityRate": 0.13966239456547552
+        "probabilityRate": 0.13218264204362656
       },
       {
         "bucket": 2,
-        "count": 56,
-        "actualRate": 0.25,
-        "probabilityRate": 0.25973035233288594
+        "count": 25,
+        "actualRate": 0.28,
+        "probabilityRate": 0.2517811510130826
       },
       {
         "bucket": 3,
-        "count": 145,
-        "actualRate": 0.31724137931034485,
-        "probabilityRate": 0.3480933438975324
+        "count": 83,
+        "actualRate": 0.24096385542168675,
+        "probabilityRate": 0.35861369881783195
       },
       {
         "bucket": 4,
-        "count": 144,
-        "actualRate": 0.4583333333333333,
-        "probabilityRate": 0.44527664132272604
+        "count": 160,
+        "actualRate": 0.35,
+        "probabilityRate": 0.4516699193624378
       },
       {
         "bucket": 5,
-        "count": 121,
-        "actualRate": 0.5371900826446281,
-        "probabilityRate": 0.5510716296114309
+        "count": 196,
+        "actualRate": 0.5153061224489796,
+        "probabilityRate": 0.5516702561084994
       },
       {
         "bucket": 6,
-        "count": 150,
-        "actualRate": 0.68,
-        "probabilityRate": 0.6451467068535623
+        "count": 169,
+        "actualRate": 0.6390532544378699,
+        "probabilityRate": 0.6546605043208866
       },
       {
         "bucket": 7,
-        "count": 68,
-        "actualRate": 0.7352941176470589,
-        "probabilityRate": 0.7375867705372714
+        "count": 74,
+        "actualRate": 0.7297297297297297,
+        "probabilityRate": 0.7418546644879697
       },
       {
         "bucket": 8,
-        "count": 42,
-        "actualRate": 0.8333333333333334,
-        "probabilityRate": 0.8626774714895915
+        "count": 39,
+        "actualRate": 0.8461538461538461,
+        "probabilityRate": 0.8541026793748606
       },
       {
         "bucket": 9,
-        "count": 118,
-        "actualRate": 0.8728813559322034,
-        "probabilityRate": 0.9569901300415322
+        "count": 122,
+        "actualRate": 0.860655737704918,
+        "probabilityRate": 0.9548181113741704
       }
     ],
     "reduced_candidate_stack": [
       {
         "bucket": 0,
-        "count": 119,
-        "actualRate": 0.11764705882352941,
-        "probabilityRate": 0.04934574191413123
+        "count": 89,
+        "actualRate": 0.0898876404494382,
+        "probabilityRate": 0.0496767139139796
       },
       {
         "bucket": 1,
-        "count": 64,
-        "actualRate": 0.125,
-        "probabilityRate": 0.14581950695176762
+        "count": 63,
+        "actualRate": 0.14285714285714285,
+        "probabilityRate": 0.1386578827583004
       },
       {
         "bucket": 2,
-        "count": 51,
-        "actualRate": 0.3333333333333333,
-        "probabilityRate": 0.2466207061513043
+        "count": 38,
+        "actualRate": 0.18421052631578946,
+        "probabilityRate": 0.25364784611184316
       },
       {
         "bucket": 3,
-        "count": 113,
-        "actualRate": 0.34513274336283184,
-        "probabilityRate": 0.3435602199870714
+        "count": 71,
+        "actualRate": 0.3380281690140845,
+        "probabilityRate": 0.3595707698430626
       },
       {
         "bucket": 4,
-        "count": 157,
-        "actualRate": 0.4394904458598726,
-        "probabilityRate": 0.43884399890866543
+        "count": 148,
+        "actualRate": 0.36486486486486486,
+        "probabilityRate": 0.45087828357139476
       },
       {
         "bucket": 5,
-        "count": 156,
-        "actualRate": 0.5641025641025641,
-        "probabilityRate": 0.5625470374402356
+        "count": 177,
+        "actualRate": 0.480225988700565,
+        "probabilityRate": 0.5497886636457442
       },
       {
         "bucket": 6,
-        "count": 111,
-        "actualRate": 0.6576576576576577,
-        "probabilityRate": 0.6570372252356467
+        "count": 170,
+        "actualRate": 0.6647058823529411,
+        "probabilityRate": 0.6512786564396367
       },
       {
         "bucket": 7,
-        "count": 55,
-        "actualRate": 0.6727272727272727,
-        "probabilityRate": 0.7540494007885514
+        "count": 72,
+        "actualRate": 0.6527777777777778,
+        "probabilityRate": 0.7412005718972766
       },
       {
         "bucket": 8,
-        "count": 67,
-        "actualRate": 0.8805970149253731,
-        "probabilityRate": 0.8524538513889881
+        "count": 63,
+        "actualRate": 0.873015873015873,
+        "probabilityRate": 0.8552450025900232
       },
       {
         "bucket": 9,
-        "count": 113,
-        "actualRate": 0.8761061946902655,
-        "probabilityRate": 0.9524799837973241
+        "count": 115,
+        "actualRate": 0.8782608695652174,
+        "probabilityRate": 0.9522743999302848
       }
     ],
     "seed_only_logit": [
       {
         "bucket": 0,
-        "count": 79,
-        "actualRate": 0.08860759493670886,
-        "probabilityRate": 0.05844008346100661
+        "count": 50,
+        "actualRate": 0.08,
+        "probabilityRate": 0.05236158582146928
       },
       {
         "bucket": 1,
-        "count": 50,
-        "actualRate": 0.2,
-        "probabilityRate": 0.1459558152066484
+        "count": 62,
+        "actualRate": 0.12903225806451613,
+        "probabilityRate": 0.15451653762381604
       },
       {
         "bucket": 2,
-        "count": 101,
-        "actualRate": 0.22772277227722773,
-        "probabilityRate": 0.24467185511495138
+        "count": 64,
+        "actualRate": 0.28125,
+        "probabilityRate": 0.2673806274439425
       },
       {
         "bucket": 3,
-        "count": 182,
-        "actualRate": 0.37362637362637363,
-        "probabilityRate": 0.36171510106616434
+        "count": 75,
+        "actualRate": 0.24,
+        "probabilityRate": 0.3607324562773138
       },
       {
         "bucket": 4,
-        "count": 81,
-        "actualRate": 0.4567901234567901,
-        "probabilityRate": 0.449851941310334
+        "count": 167,
+        "actualRate": 0.3712574850299401,
+        "probabilityRate": 0.45754634096731894
       },
       {
         "bucket": 5,
-        "count": 99,
-        "actualRate": 0.5353535353535354,
-        "probabilityRate": 0.5395457189760731
+        "count": 161,
+        "actualRate": 0.4968944099378882,
+        "probabilityRate": 0.5533318501764076
       },
       {
         "bucket": 6,
-        "count": 191,
-        "actualRate": 0.6282722513089005,
-        "probabilityRate": 0.6407373930617832
+        "count": 177,
+        "actualRate": 0.6271186440677966,
+        "probabilityRate": 0.6380993720711655
       },
       {
         "bucket": 7,
-        "count": 94,
-        "actualRate": 0.776595744680851,
-        "probabilityRate": 0.7573857767256746
+        "count": 121,
+        "actualRate": 0.743801652892562,
+        "probabilityRate": 0.7480819993399184
       },
       {
         "bucket": 8,
         "count": 62,
         "actualRate": 0.8387096774193549,
-        "probabilityRate": 0.857329244034219
+        "probabilityRate": 0.8575581722340109
       },
       {
         "bucket": 9,
@@ -1802,362 +1802,362 @@
     "equal_weight_consensus": [
       {
         "bucket": 0,
-        "count": 127,
-        "actualRate": 0.14173228346456693,
-        "probabilityRate": 0.04568638505849325
+        "count": 98,
+        "actualRate": 0.1326530612244898,
+        "probabilityRate": 0.04288794441360281
       },
       {
         "bucket": 1,
-        "count": 56,
-        "actualRate": 0.17857142857142858,
-        "probabilityRate": 0.1489070993421284
+        "count": 67,
+        "actualRate": 0.16417910447761194,
+        "probabilityRate": 0.14848542326621886
       },
       {
         "bucket": 2,
-        "count": 54,
-        "actualRate": 0.2962962962962963,
-        "probabilityRate": 0.26052900156333714
+        "count": 26,
+        "actualRate": 0.2692307692307692,
+        "probabilityRate": 0.24466263837203603
       },
       {
         "bucket": 3,
-        "count": 91,
-        "actualRate": 0.3516483516483517,
-        "probabilityRate": 0.3446017940906075
+        "count": 88,
+        "actualRate": 0.29545454545454547,
+        "probabilityRate": 0.355502603280655
       },
       {
         "bucket": 4,
-        "count": 212,
-        "actualRate": 0.4716981132075472,
-        "probabilityRate": 0.4713037888801766
+        "count": 85,
+        "actualRate": 0.3764705882352941,
+        "probabilityRate": 0.464068264159745
       },
       {
         "bucket": 5,
-        "count": 147,
-        "actualRate": 0.5510204081632653,
-        "probabilityRate": 0.5467785911668047
+        "count": 269,
+        "actualRate": 0.49814126394052044,
+        "probabilityRate": 0.548237336237251
       },
       {
         "bucket": 6,
-        "count": 80,
-        "actualRate": 0.625,
-        "probabilityRate": 0.6571638852348356
+        "count": 115,
+        "actualRate": 0.6347826086956522,
+        "probabilityRate": 0.6434776956433843
       },
       {
         "bucket": 7,
-        "count": 56,
-        "actualRate": 0.7321428571428571,
-        "probabilityRate": 0.7345179151766242
+        "count": 74,
+        "actualRate": 0.6891891891891891,
+        "probabilityRate": 0.7368964930176061
       },
       {
         "bucket": 8,
-        "count": 65,
-        "actualRate": 0.8461538461538461,
-        "probabilityRate": 0.8560799181481925
+        "count": 57,
+        "actualRate": 0.8245614035087719,
+        "probabilityRate": 0.8532281959126459
       },
       {
         "bucket": 9,
-        "count": 118,
-        "actualRate": 0.847457627118644,
-        "probabilityRate": 0.9578646223627033
+        "count": 127,
+        "actualRate": 0.8582677165354331,
+        "probabilityRate": 0.9546575522495825
       }
     ],
     "best_single_source_bpi": [
       {
         "bucket": 0,
-        "count": 97,
-        "actualRate": 0.16494845360824742,
-        "probabilityRate": 0.05914068402713285
+        "count": 61,
+        "actualRate": 0.08196721311475409,
+        "probabilityRate": 0.0522663488484701
       },
       {
         "bucket": 1,
-        "count": 49,
-        "actualRate": 0.16326530612244897,
-        "probabilityRate": 0.13874132400509698
+        "count": 78,
+        "actualRate": 0.24358974358974358,
+        "probabilityRate": 0.1448434316817928
       },
       {
         "bucket": 2,
-        "count": 49,
-        "actualRate": 0.2653061224489796,
-        "probabilityRate": 0.2567945758105358
+        "count": 21,
+        "actualRate": 0.047619047619047616,
+        "probabilityRate": 0.2642631846935607
       },
       {
         "bucket": 3,
-        "count": 113,
-        "actualRate": 0.34513274336283184,
-        "probabilityRate": 0.3395076994072888
+        "count": 58,
+        "actualRate": 0.3275862068965517,
+        "probabilityRate": 0.3603844331891021
       },
       {
         "bucket": 4,
-        "count": 80,
-        "actualRate": 0.425,
-        "probabilityRate": 0.46293978270596237
+        "count": 164,
+        "actualRate": 0.39634146341463417,
+        "probabilityRate": 0.44966016817290977
       },
       {
         "bucket": 5,
-        "count": 310,
-        "actualRate": 0.5193548387096775,
-        "probabilityRate": 0.5109056515441974
+        "count": 291,
+        "actualRate": 0.49140893470790376,
+        "probabilityRate": 0.5351644811627225
       },
       {
         "bucket": 6,
-        "count": 118,
-        "actualRate": 0.6610169491525424,
-        "probabilityRate": 0.6619959643633873
+        "count": 115,
+        "actualRate": 0.6782608695652174,
+        "probabilityRate": 0.6590317654408231
       },
       {
         "bucket": 7,
-        "count": 43,
-        "actualRate": 0.7209302325581395,
-        "probabilityRate": 0.740183200759538
+        "count": 71,
+        "actualRate": 0.704225352112676,
+        "probabilityRate": 0.7369596602207307
       },
       {
         "bucket": 8,
         "count": 50,
         "actualRate": 0.84,
-        "probabilityRate": 0.8599234701589639
+        "probabilityRate": 0.8642142310702791
       },
       {
         "bucket": 9,
         "count": 97,
         "actualRate": 0.8350515463917526,
-        "probabilityRate": 0.9406284056782684
+        "probabilityRate": 0.9426666066918173
       }
     ],
     "best_single_source_net": [
       {
         "bucket": 2,
-        "count": 54,
-        "actualRate": 0.12962962962962962,
-        "probabilityRate": 0.26445524766594586
+        "count": 20,
+        "actualRate": 0.1,
+        "probabilityRate": 0.23383282406947278
       },
       {
         "bucket": 3,
-        "count": 79,
-        "actualRate": 0.26582278481012656,
-        "probabilityRate": 0.3423144818053128
+        "count": 81,
+        "actualRate": 0.2222222222222222,
+        "probabilityRate": 0.3535568885993127
       },
       {
         "bucket": 4,
-        "count": 271,
-        "actualRate": 0.46494464944649444,
-        "probabilityRate": 0.4849391435640589
+        "count": 50,
+        "actualRate": 0.26,
+        "probabilityRate": 0.4447586486983907
       },
       {
         "bucket": 5,
-        "count": 467,
-        "actualRate": 0.5182012847965739,
-        "probabilityRate": 0.5083264838110783
+        "count": 704,
+        "actualRate": 0.5,
+        "probabilityRate": 0.5372088060211099
       },
       {
         "bucket": 6,
-        "count": 73,
-        "actualRate": 0.7808219178082192,
-        "probabilityRate": 0.6588980742835254
+        "count": 79,
+        "actualRate": 0.7341772151898734,
+        "probabilityRate": 0.6577634519675664
       },
       {
         "bucket": 7,
-        "count": 57,
-        "actualRate": 0.8070175438596491,
-        "probabilityRate": 0.7253091152801732
+        "count": 67,
+        "actualRate": 0.835820895522388,
+        "probabilityRate": 0.7357816131488571
       },
       {
         "bucket": 8,
         "count": 5,
         "actualRate": 0.8,
-        "probabilityRate": 0.8015032388813449
+        "probabilityRate": 0.8147699537308675
       }
     ],
     "best_single_source_power": [
       {
         "bucket": 0,
-        "count": 122,
-        "actualRate": 0.09016393442622951,
-        "probabilityRate": 0.03679901913466474
+        "count": 98,
+        "actualRate": 0.09183673469387756,
+        "probabilityRate": 0.034503695083321614
       },
       {
         "bucket": 1,
-        "count": 52,
-        "actualRate": 0.17307692307692307,
-        "probabilityRate": 0.1636579635727566
+        "count": 42,
+        "actualRate": 0.09523809523809523,
+        "probabilityRate": 0.13611766191545432
       },
       {
         "bucket": 2,
-        "count": 62,
-        "actualRate": 0.3225806451612903,
-        "probabilityRate": 0.25746787855313313
+        "count": 55,
+        "actualRate": 0.2545454545454545,
+        "probabilityRate": 0.25129407717417607
       },
       {
         "bucket": 3,
-        "count": 72,
-        "actualRate": 0.375,
-        "probabilityRate": 0.363701621419277
+        "count": 50,
+        "actualRate": 0.32,
+        "probabilityRate": 0.35126452869744695
       },
       {
         "bucket": 4,
-        "count": 226,
-        "actualRate": 0.4690265486725664,
-        "probabilityRate": 0.4803565775496733
+        "count": 77,
+        "actualRate": 0.38961038961038963,
+        "probabilityRate": 0.45199351563428275
       },
       {
         "bucket": 5,
-        "count": 165,
-        "actualRate": 0.5454545454545454,
-        "probabilityRate": 0.5277331026190291
+        "count": 355,
+        "actualRate": 0.49859154929577465,
+        "probabilityRate": 0.5471470406054861
       },
       {
         "bucket": 6,
-        "count": 78,
-        "actualRate": 0.6282051282051282,
-        "probabilityRate": 0.6429278636667166
+        "count": 81,
+        "actualRate": 0.6172839506172839,
+        "probabilityRate": 0.643309065688451
       },
       {
         "bucket": 7,
-        "count": 55,
-        "actualRate": 0.6727272727272727,
-        "probabilityRate": 0.7457370047136171
+        "count": 65,
+        "actualRate": 0.6461538461538462,
+        "probabilityRate": 0.741409983562933
       },
       {
         "bucket": 8,
-        "count": 54,
-        "actualRate": 0.8333333333333334,
-        "probabilityRate": 0.8357720955723303
+        "count": 59,
+        "actualRate": 0.8135593220338984,
+        "probabilityRate": 0.8327055599688079
       },
       {
         "bucket": 9,
-        "count": 120,
-        "actualRate": 0.9083333333333333,
-        "probabilityRate": 0.9640814683584579
+        "count": 124,
+        "actualRate": 0.9112903225806451,
+        "probabilityRate": 0.9627274890523174
       }
     ],
     "current_stack_compat": [
       {
         "bucket": 0,
-        "count": 94,
-        "actualRate": 0.13829787234042554,
-        "probabilityRate": 0.035972601810467984
+        "count": 86,
+        "actualRate": 0.1511627906976744,
+        "probabilityRate": 0.04165485010798934
       },
       {
         "bucket": 1,
-        "count": 85,
-        "actualRate": 0.2235294117647059,
-        "probabilityRate": 0.15172729573033725
+        "count": 50,
+        "actualRate": 0.16,
+        "probabilityRate": 0.15811465141606443
       },
       {
         "bucket": 2,
-        "count": 61,
-        "actualRate": 0.22950819672131148,
-        "probabilityRate": 0.24997203843007518
+        "count": 64,
+        "actualRate": 0.21875,
+        "probabilityRate": 0.2454020415570726
       },
       {
         "bucket": 3,
-        "count": 118,
-        "actualRate": 0.3898305084745763,
-        "probabilityRate": 0.3628774848077471
+        "count": 47,
+        "actualRate": 0.2978723404255319,
+        "probabilityRate": 0.34926634941519547
       },
       {
         "bucket": 4,
-        "count": 121,
-        "actualRate": 0.36363636363636365,
-        "probabilityRate": 0.43959151134969277
+        "count": 150,
+        "actualRate": 0.42,
+        "probabilityRate": 0.4571999736845234
       },
       {
         "bucket": 5,
-        "count": 112,
-        "actualRate": 0.625,
-        "probabilityRate": 0.5561409035314906
+        "count": 146,
+        "actualRate": 0.4383561643835616,
+        "probabilityRate": 0.5554522453541327
       },
       {
         "bucket": 6,
-        "count": 140,
-        "actualRate": 0.55,
-        "probabilityRate": 0.6439810840608382
+        "count": 159,
+        "actualRate": 0.5786163522012578,
+        "probabilityRate": 0.6377761273117564
       },
       {
         "bucket": 7,
-        "count": 67,
-        "actualRate": 0.6865671641791045,
-        "probabilityRate": 0.7471506030941621
+        "count": 106,
+        "actualRate": 0.6509433962264151,
+        "probabilityRate": 0.7505352682847115
       },
       {
         "bucket": 8,
-        "count": 91,
-        "actualRate": 0.7912087912087912,
-        "probabilityRate": 0.8429427180312242
+        "count": 79,
+        "actualRate": 0.810126582278481,
+        "probabilityRate": 0.8524709674482213
       },
       {
         "bucket": 9,
-        "count": 117,
-        "actualRate": 0.8717948717948718,
-        "probabilityRate": 0.9599633260842498
+        "count": 119,
+        "actualRate": 0.8571428571428571,
+        "probabilityRate": 0.9586141791817686
       }
     ]
   },
   "featureImportance": [
     {
       "feature": "kenpom_badj_em_power_diff",
-      "marginCoefficient": 3.811787913051452,
-      "winCoefficient": 0.7208149452187049,
-      "absoluteMagnitude": 4.532602858270157
+      "marginCoefficient": 4.072290701065408,
+      "winCoefficient": 0.6490080311956521,
+      "absoluteMagnitude": 4.72129873226106
     },
     {
       "feature": "evanmiya_relative_rating_power_diff",
-      "marginCoefficient": 3.1656737708855847,
-      "winCoefficient": 0.6076743573378264,
-      "absoluteMagnitude": 3.773348128223411
+      "marginCoefficient": 2.993967041283655,
+      "winCoefficient": 0.5710021189510366,
+      "absoluteMagnitude": 3.564969160234692
     },
     {
       "feature": "seed_diff",
-      "marginCoefficient": -3.187757590308429,
+      "marginCoefficient": -2.452624029014104,
       "winCoefficient": 0.0,
-      "absoluteMagnitude": 3.187757590308429
-    },
-    {
-      "feature": "massey_ordinal_rank_percentile_diff",
-      "marginCoefficient": -0.4816157580488465,
-      "winCoefficient": 0.05831253807942505,
-      "absoluteMagnitude": 0.5399282961282715
+      "absoluteMagnitude": 2.452624029014104
     },
     {
       "feature": "bpi_rank_percentile_diff",
-      "marginCoefficient": 0.3537693024878683,
-      "winCoefficient": -0.1340035469528278,
-      "absoluteMagnitude": 0.4877728494406961
+      "marginCoefficient": 0.4164266898864941,
+      "winCoefficient": -0.11080718890417707,
+      "absoluteMagnitude": 0.5272338787906712
     },
     {
-      "feature": "abs_seed_same_conference_interaction",
-      "marginCoefficient": 0.011478602924643866,
-      "winCoefficient": 0.002648789758910919,
-      "absoluteMagnitude": 0.014127392683554785
-    },
-    {
-      "feature": "missing_massey_ordinal_rank",
-      "marginCoefficient": 0.007201490789364939,
-      "winCoefficient": 0.001276898053768294,
-      "absoluteMagnitude": 0.008478388843133233
-    },
-    {
-      "feature": "missing_kenpom_badj_em",
-      "marginCoefficient": -0.004276842047447715,
-      "winCoefficient": -0.001724576800847033,
-      "absoluteMagnitude": 0.006001418848294748
-    },
-    {
-      "feature": "missing_evanmiya_relative_rating",
-      "marginCoefficient": -0.004276842047447715,
-      "winCoefficient": -0.001724576800847033,
-      "absoluteMagnitude": 0.006001418848294748
+      "feature": "massey_ordinal_rank_percentile_diff",
+      "marginCoefficient": -0.439449482698695,
+      "winCoefficient": 0.02721200962278969,
+      "absoluteMagnitude": 0.4666614923214847
     },
     {
       "feature": "seed_kenpom_interaction",
-      "marginCoefficient": 0.0016451715630818597,
-      "winCoefficient": -0.0042898910282520575,
-      "absoluteMagnitude": 0.005935062591333917
+      "marginCoefficient": 0.20666773636317082,
+      "winCoefficient": 0.030349095500177503,
+      "absoluteMagnitude": 0.23701683186334832
     },
     {
       "feature": "missing_bpi_rank",
-      "marginCoefficient": 0.0008954711974613616,
-      "winCoefficient": 0.00435295271900682,
-      "absoluteMagnitude": 0.005248423916468181
+      "marginCoefficient": -0.1129126725041818,
+      "winCoefficient": -0.009823842211829359,
+      "absoluteMagnitude": 0.12273651471601116
+    },
+    {
+      "feature": "abs_seed_same_conference_interaction",
+      "marginCoefficient": 0.018509071382569076,
+      "winCoefficient": 0.0028756255371242823,
+      "absoluteMagnitude": 0.021384696919693358
+    },
+    {
+      "feature": "missing_kenpom_badj_em",
+      "marginCoefficient": 0.012975427862409461,
+      "winCoefficient": 0.005042546693375227,
+      "absoluteMagnitude": 0.018017974555784688
+    },
+    {
+      "feature": "missing_evanmiya_relative_rating",
+      "marginCoefficient": 0.012975427862409461,
+      "winCoefficient": 0.005042546693375227,
+      "absoluteMagnitude": 0.018017974555784688
+    },
+    {
+      "feature": "missing_massey_ordinal_rank",
+      "marginCoefficient": 0.009142014369428075,
+      "winCoefficient": -0.0032776687332574106,
+      "absoluteMagnitude": 0.012419683102685486
     }
   ],
   "featureSemantics": [
@@ -2321,321 +2321,321 @@
     "upset_games": {
       "metrics": {
         "candidate_stack": {
-          "logLoss": 1.219213576116902,
-          "brierScore": 0.43781354853406224,
-          "marginMae": 13.498532055056886,
-          "calibrationError": 0.5480344965968111,
-          "upsetRecall": 0.1048951048951049,
+          "logLoss": 1.153783854903543,
+          "brierScore": 0.4139973246156129,
+          "marginMae": 13.1684335651724,
+          "calibrationError": 0.44773321849963743,
+          "upsetRecall": 0.34965034965034963,
           "meanCalibrationShift": 0.0
         },
         "optimized_candidate_stack": {
-          "logLoss": 1.1448851497618318,
-          "brierScore": 0.40654144946868226,
-          "marginMae": 13.606080624133805,
-          "calibrationError": 0.39133549765235437,
-          "upsetRecall": 0.27972027972027974,
+          "logLoss": 1.09858045342427,
+          "brierScore": 0.39213787851478565,
+          "marginMae": 13.270941604287938,
+          "calibrationError": 0.3773395557367929,
+          "upsetRecall": 0.46153846153846156,
           "meanCalibrationShift": 0.0
         },
         "gbm_distilled_candidate_stack": {
-          "logLoss": 1.0570629185002145,
-          "brierScore": 0.38381232734789056,
-          "marginMae": 13.481272461215692,
-          "calibrationError": 0.38007412796103185,
-          "upsetRecall": 0.2727272727272727,
-          "meanCalibrationShift": 0.02729144727944142
+          "logLoss": 1.0538897477032212,
+          "brierScore": 0.38094274074907897,
+          "marginMae": 13.093447685308016,
+          "calibrationError": 0.36649543815301255,
+          "upsetRecall": 0.32867132867132864,
+          "meanCalibrationShift": 0.05106198607124087
         },
         "enhanced_candidate_stack": {
-          "logLoss": 1.0669510315450388,
-          "brierScore": 0.38319351758010667,
-          "marginMae": 13.512749437453865,
-          "calibrationError": 0.36700701136023095,
-          "upsetRecall": 0.3006993006993007,
-          "meanCalibrationShift": 0.032928558173118724
+          "logLoss": 1.0687498557147992,
+          "brierScore": 0.3836498377347722,
+          "marginMae": 13.14167184611692,
+          "calibrationError": 0.36438101679573487,
+          "upsetRecall": 0.35664335664335667,
+          "meanCalibrationShift": 0.05171251883647705
         },
         "candidate_stack_with_massey_master": {
-          "logLoss": 1.235590877742471,
-          "brierScore": 0.4427678276025183,
-          "marginMae": 13.40915059273849,
-          "calibrationError": 0.5730911575981014,
-          "upsetRecall": 0.08391608391608392,
+          "logLoss": 1.1558153857170423,
+          "brierScore": 0.4106781307685164,
+          "marginMae": 13.069759737632971,
+          "calibrationError": 0.45649686681136536,
+          "upsetRecall": 0.3356643356643357,
           "meanCalibrationShift": 0.0
         },
         "reduced_candidate_stack": {
-          "logLoss": 1.2295507255098594,
-          "brierScore": 0.4479792536196393,
-          "marginMae": 13.596319428475491,
-          "calibrationError": 0.5804881684013747,
-          "upsetRecall": 0.08391608391608392,
+          "logLoss": 1.1498876168459096,
+          "brierScore": 0.4171137527707659,
+          "marginMae": 13.16159821931944,
+          "calibrationError": 0.46517105854812396,
+          "upsetRecall": 0.32167832167832167,
           "meanCalibrationShift": 0.0
         },
         "seed_only_logit": {
-          "logLoss": 1.189488946668463,
-          "brierScore": 0.45339739506113874,
-          "marginMae": 14.752811006401883,
-          "calibrationError": 0.6613513004823828,
-          "upsetRecall": 0.006993006993006993,
+          "logLoss": 1.0965414880692468,
+          "brierScore": 0.4147839459867586,
+          "marginMae": 14.318009923316485,
+          "calibrationError": 0.5242481939023487,
+          "upsetRecall": 0.23076923076923078,
           "meanCalibrationShift": 0.0
         },
         "equal_weight_consensus": {
-          "logLoss": 1.1928384431327497,
-          "brierScore": 0.41882788530914533,
-          "marginMae": 13.093203622812194,
-          "calibrationError": 0.43862778394981505,
-          "upsetRecall": 0.26573426573426573,
+          "logLoss": 1.1520141642319213,
+          "brierScore": 0.40506498536916385,
+          "marginMae": 12.92037174174386,
+          "calibrationError": 0.39931500110878976,
+          "upsetRecall": 0.45454545454545453,
           "meanCalibrationShift": 0.0
         },
         "best_single_source_bpi": {
-          "logLoss": 1.1309014680252676,
-          "brierScore": 0.40374227439742566,
-          "marginMae": 12.117614045903444,
-          "calibrationError": 0.3756099342738751,
-          "upsetRecall": 0.36363636363636365,
+          "logLoss": 1.0943744103659454,
+          "brierScore": 0.39080864167319596,
+          "marginMae": 12.013273801695632,
+          "calibrationError": 0.3655482850205229,
+          "upsetRecall": 0.44755244755244755,
           "meanCalibrationShift": 0.0
         },
         "best_single_source_net": {
-          "logLoss": 0.785740881710115,
-          "brierScore": 0.29384984968520894,
-          "marginMae": 11.549208996100285,
-          "calibrationError": 0.19121074460135487,
-          "upsetRecall": 0.6433566433566433,
+          "logLoss": 0.7773897526363673,
+          "brierScore": 0.2898876973732746,
+          "marginMae": 11.486842397179005,
+          "calibrationError": 0.16628854536015097,
+          "upsetRecall": 0.7902097902097902,
           "meanCalibrationShift": 0.0
         },
         "best_single_source_power": {
-          "logLoss": 1.1166310311431564,
-          "brierScore": 0.39677676414362595,
-          "marginMae": 12.80878841217823,
-          "calibrationError": 0.36122983487607896,
-          "upsetRecall": 0.22377622377622378,
+          "logLoss": 1.0817200312336008,
+          "brierScore": 0.38522288000106286,
+          "marginMae": 12.68334602888996,
+          "calibrationError": 0.3436749520051522,
+          "upsetRecall": 0.5314685314685315,
           "meanCalibrationShift": 0.0
         },
         "current_stack_compat": {
-          "logLoss": 1.3317630841118553,
-          "brierScore": 0.4763774493356547,
-          "marginMae": 15.138220399023826,
-          "calibrationError": 0.5976033214370869,
-          "upsetRecall": 0.1258741258741259,
+          "logLoss": 1.271856905749948,
+          "brierScore": 0.44905366325065266,
+          "marginMae": 14.807267981142067,
+          "calibrationError": 0.5877946393429716,
+          "upsetRecall": 0.2937062937062937,
           "meanCalibrationShift": 0.0
         }
       },
       "winner": {
+        "calibrationError": "best_single_source_net",
         "marginMae": "best_single_source_net",
         "logLoss": "best_single_source_net",
         "brierScore": "best_single_source_net",
-        "calibrationError": "best_single_source_net",
         "upsetRecall": "best_single_source_net"
       }
     },
     "one_possession_games": {
       "metrics": {
         "candidate_stack": {
-          "logLoss": 0.8548774874562107,
-          "brierScore": 0.2908934329625406,
-          "marginMae": 5.164400226292752,
-          "calibrationError": 0.17883044610546714,
-          "upsetRecall": 0.0,
-          "meanCalibrationShift": 0.0
-        },
-        "optimized_candidate_stack": {
-          "logLoss": 0.8115883051677906,
-          "brierScore": 0.27696561343408527,
-          "marginMae": 5.1997222348052,
-          "calibrationError": 0.16884946946930568,
-          "upsetRecall": 0.12121212121212122,
-          "meanCalibrationShift": 0.0
-        },
-        "gbm_distilled_candidate_stack": {
-          "logLoss": 0.7613984769509228,
-          "brierScore": 0.2678907345322493,
-          "marginMae": 5.162788163641951,
-          "calibrationError": 0.1406986926119582,
-          "upsetRecall": 0.15151515151515152,
-          "meanCalibrationShift": 0.031382977470344874
-        },
-        "enhanced_candidate_stack": {
-          "logLoss": 0.7747287481304038,
-          "brierScore": 0.27039285571416255,
-          "marginMae": 5.376258298492468,
-          "calibrationError": 0.13115306533058949,
-          "upsetRecall": 0.21212121212121213,
-          "meanCalibrationShift": 0.03279434071663384
-        },
-        "candidate_stack_with_massey_master": {
-          "logLoss": 0.8720431643102926,
-          "brierScore": 0.29620949237993577,
-          "marginMae": 5.077641079809004,
-          "calibrationError": 0.1679782359767732,
-          "upsetRecall": 0.0,
-          "meanCalibrationShift": 0.0
-        },
-        "reduced_candidate_stack": {
-          "logLoss": 0.8264482759411517,
-          "brierScore": 0.2837506666206875,
-          "marginMae": 5.238350320078173,
-          "calibrationError": 0.15793410173438216,
-          "upsetRecall": 0.0,
-          "meanCalibrationShift": 0.0
-        },
-        "seed_only_logit": {
-          "logLoss": 0.7908677815254024,
-          "brierScore": 0.2800805476517891,
-          "marginMae": 5.4561597242971525,
-          "calibrationError": 0.13053197409012046,
-          "upsetRecall": 0.0,
-          "meanCalibrationShift": 0.0
-        },
-        "equal_weight_consensus": {
-          "logLoss": 0.8630390720817671,
-          "brierScore": 0.2947335277274921,
-          "marginMae": 4.698507001941319,
-          "calibrationError": 0.21882392832803776,
-          "upsetRecall": 0.18181818181818182,
-          "meanCalibrationShift": 0.0
-        },
-        "best_single_source_bpi": {
-          "logLoss": 0.8489449878290078,
-          "brierScore": 0.2842143505012173,
-          "marginMae": 4.0893520246007995,
-          "calibrationError": 0.14784585064886194,
+          "logLoss": 0.8369877815851827,
+          "brierScore": 0.287351771488653,
+          "marginMae": 4.967844642275131,
+          "calibrationError": 0.15900961890963378,
           "upsetRecall": 0.2727272727272727,
           "meanCalibrationShift": 0.0
         },
+        "optimized_candidate_stack": {
+          "logLoss": 0.7962379565710065,
+          "brierScore": 0.27531489101702866,
+          "marginMae": 4.997708905210876,
+          "calibrationError": 0.11968056115292612,
+          "upsetRecall": 0.3939393939393939,
+          "meanCalibrationShift": 0.0
+        },
+        "gbm_distilled_candidate_stack": {
+          "logLoss": 0.7725425304816725,
+          "brierScore": 0.26892768664889,
+          "marginMae": 4.904316473373413,
+          "calibrationError": 0.1292537062689364,
+          "upsetRecall": 0.21212121212121213,
+          "meanCalibrationShift": 0.055506496959656586
+        },
+        "enhanced_candidate_stack": {
+          "logLoss": 0.7670856455070787,
+          "brierScore": 0.26773700395368244,
+          "marginMae": 5.086302699222422,
+          "calibrationError": 0.14345233999577756,
+          "upsetRecall": 0.21212121212121213,
+          "meanCalibrationShift": 0.05475129960285317
+        },
+        "candidate_stack_with_massey_master": {
+          "logLoss": 0.860923062872689,
+          "brierScore": 0.29408558546353025,
+          "marginMae": 4.870807879715269,
+          "calibrationError": 0.15042979032832818,
+          "upsetRecall": 0.24242424242424243,
+          "meanCalibrationShift": 0.0
+        },
+        "reduced_candidate_stack": {
+          "logLoss": 0.7951132315042007,
+          "brierScore": 0.2740971343345371,
+          "marginMae": 4.966082978670698,
+          "calibrationError": 0.12648446469777105,
+          "upsetRecall": 0.2727272727272727,
+          "meanCalibrationShift": 0.0
+        },
+        "seed_only_logit": {
+          "logLoss": 0.7759006063888193,
+          "brierScore": 0.2763458862610433,
+          "marginMae": 5.094624859751283,
+          "calibrationError": 0.1307065003939627,
+          "upsetRecall": 0.21212121212121213,
+          "meanCalibrationShift": 0.0
+        },
+        "equal_weight_consensus": {
+          "logLoss": 0.8505669773195693,
+          "brierScore": 0.2918117959433975,
+          "marginMae": 4.5506281030379165,
+          "calibrationError": 0.14109210743035996,
+          "upsetRecall": 0.36363636363636365,
+          "meanCalibrationShift": 0.0
+        },
+        "best_single_source_bpi": {
+          "logLoss": 0.8412938449037998,
+          "brierScore": 0.2824099411020175,
+          "marginMae": 4.040325600714567,
+          "calibrationError": 0.1263724070489318,
+          "upsetRecall": 0.36363636363636365,
+          "meanCalibrationShift": 0.0
+        },
         "best_single_source_net": {
-          "logLoss": 0.7026809033680051,
-          "brierScore": 0.254344629067516,
-          "marginMae": 3.2434979806603925,
-          "calibrationError": 0.049468969538891454,
-          "upsetRecall": 0.6363636363636364,
+          "logLoss": 0.7049615035336371,
+          "brierScore": 0.25548812359095485,
+          "marginMae": 3.247105762258788,
+          "calibrationError": 0.06544725861220489,
+          "upsetRecall": 0.8484848484848485,
           "meanCalibrationShift": 0.0
         },
         "best_single_source_power": {
-          "logLoss": 0.7757801879442191,
-          "brierScore": 0.2669266481293322,
-          "marginMae": 4.843460307650492,
-          "calibrationError": 0.15329854601127335,
-          "upsetRecall": 0.06060606060606061,
+          "logLoss": 0.7679493619743254,
+          "brierScore": 0.2660376195092263,
+          "marginMae": 4.713045936066307,
+          "calibrationError": 0.11887889551665179,
+          "upsetRecall": 0.5151515151515151,
           "meanCalibrationShift": 0.0
         },
         "current_stack_compat": {
-          "logLoss": 0.8725311573608299,
-          "brierScore": 0.2962679451208013,
-          "marginMae": 5.592147797772294,
-          "calibrationError": 0.1607677661506865,
-          "upsetRecall": 0.06060606060606061,
+          "logLoss": 0.8618276482230096,
+          "brierScore": 0.29360710223591163,
+          "marginMae": 5.428588541365151,
+          "calibrationError": 0.1650036151701706,
+          "upsetRecall": 0.24242424242424243,
           "meanCalibrationShift": 0.0
         }
       },
       "winner": {
+        "calibrationError": "best_single_source_net",
         "marginMae": "best_single_source_net",
         "logLoss": "best_single_source_net",
         "brierScore": "best_single_source_net",
-        "calibrationError": "best_single_source_net",
         "upsetRecall": "best_single_source_net"
       }
     },
     "large_seed_gap_games": {
       "metrics": {
         "candidate_stack": {
-          "logLoss": 0.5228363268687485,
-          "brierScore": 0.16437740981999283,
-          "marginMae": 9.133718781615153,
-          "calibrationError": 0.03767827302406168,
-          "upsetRecall": 0.04054054054054054,
+          "logLoss": 0.5270058313694497,
+          "brierScore": 0.16744787439320397,
+          "marginMae": 9.272280315525235,
+          "calibrationError": 0.047055011134785954,
+          "upsetRecall": 0.14864864864864866,
           "meanCalibrationShift": 0.0
         },
         "optimized_candidate_stack": {
-          "logLoss": 0.5229192904408162,
-          "brierScore": 0.16661471725357402,
-          "marginMae": 9.126333462323831,
-          "calibrationError": 0.044540725210857245,
-          "upsetRecall": 0.20270270270270271,
+          "logLoss": 0.5224018429783197,
+          "brierScore": 0.16809435170039116,
+          "marginMae": 9.234808801205974,
+          "calibrationError": 0.054838952486166194,
+          "upsetRecall": 0.32432432432432434,
           "meanCalibrationShift": 0.0
         },
         "gbm_distilled_candidate_stack": {
-          "logLoss": 0.5101314290284286,
-          "brierScore": 0.16611920548505038,
-          "marginMae": 9.195935789792903,
-          "calibrationError": 0.02157977077231844,
-          "upsetRecall": 0.1891891891891892,
-          "meanCalibrationShift": 0.03494611115989269
+          "logLoss": 0.5103239952468717,
+          "brierScore": 0.16579981806696661,
+          "marginMae": 9.323473292500346,
+          "calibrationError": 0.02499768769282182,
+          "upsetRecall": 0.24324324324324326,
+          "meanCalibrationShift": 0.055151353306678336
         },
         "enhanced_candidate_stack": {
-          "logLoss": 0.5091914662636821,
-          "brierScore": 0.1650118301527431,
-          "marginMae": 9.260124199247391,
-          "calibrationError": 0.04377772965440672,
-          "upsetRecall": 0.20270270270270271,
-          "meanCalibrationShift": 0.03617841604517015
+          "logLoss": 0.5096431119467185,
+          "brierScore": 0.16541889234421733,
+          "marginMae": 9.380113146299703,
+          "calibrationError": 0.032928262591518,
+          "upsetRecall": 0.24324324324324326,
+          "meanCalibrationShift": 0.05387295959001619
         },
         "candidate_stack_with_massey_master": {
-          "logLoss": 0.5316718999733736,
-          "brierScore": 0.16749591183585658,
-          "marginMae": 9.293655719737414,
-          "calibrationError": 0.04281190683118824,
-          "upsetRecall": 0.02702702702702703,
+          "logLoss": 0.5361067578690667,
+          "brierScore": 0.16982853680056836,
+          "marginMae": 9.421346892853148,
+          "calibrationError": 0.06329949405983602,
+          "upsetRecall": 0.13513513513513514,
           "meanCalibrationShift": 0.0
         },
         "reduced_candidate_stack": {
-          "logLoss": 0.5168527712446932,
-          "brierScore": 0.16429726374352543,
-          "marginMae": 9.11130817851735,
-          "calibrationError": 0.06191905468606852,
-          "upsetRecall": 0.013513513513513514,
+          "logLoss": 0.5120250562417935,
+          "brierScore": 0.16312421129500873,
+          "marginMae": 9.238900562796854,
+          "calibrationError": 0.04630874043374717,
+          "upsetRecall": 0.10810810810810811,
           "meanCalibrationShift": 0.0
         },
         "seed_only_logit": {
-          "logLoss": 0.5182582673292546,
-          "brierScore": 0.16851001880668806,
-          "marginMae": 9.581837578728923,
-          "calibrationError": 0.03586627525207921,
+          "logLoss": 0.5205419912377776,
+          "brierScore": 0.17002405364337433,
+          "marginMae": 9.744929572318345,
+          "calibrationError": 0.037987058398700244,
           "upsetRecall": 0.0,
           "meanCalibrationShift": 0.0
         },
         "equal_weight_consensus": {
-          "logLoss": 0.5357819373973625,
-          "brierScore": 0.16993552385446667,
-          "marginMae": 9.646384139509227,
-          "calibrationError": 0.06561053638497105,
-          "upsetRecall": 0.21621621621621623,
-          "meanCalibrationShift": 0.0
-        },
-        "best_single_source_bpi": {
-          "logLoss": 0.5795448628146906,
-          "brierScore": 0.19029294239941713,
-          "marginMae": 10.81133674539387,
-          "calibrationError": 0.04011777089231554,
+          "logLoss": 0.5357155669599698,
+          "brierScore": 0.1707665242707575,
+          "marginMae": 9.710233721946315,
+          "calibrationError": 0.05398711504770275,
           "upsetRecall": 0.3108108108108108,
           "meanCalibrationShift": 0.0
         },
+        "best_single_source_bpi": {
+          "logLoss": 0.5796724841407271,
+          "brierScore": 0.19086494724347647,
+          "marginMae": 10.800815142990235,
+          "calibrationError": 0.05239008653829429,
+          "upsetRecall": 0.32432432432432434,
+          "meanCalibrationShift": 0.0
+        },
         "best_single_source_net": {
-          "logLoss": 0.6171059495781777,
-          "brierScore": 0.21394931713179513,
-          "marginMae": 11.221919817623943,
-          "calibrationError": 0.055863601623557996,
-          "upsetRecall": 0.6216216216216216,
+          "logLoss": 0.6232893057349114,
+          "brierScore": 0.21690053891128142,
+          "marginMae": 11.26506394544267,
+          "calibrationError": 0.07987085336759188,
+          "upsetRecall": 0.7297297297297297,
           "meanCalibrationShift": 0.0
         },
         "best_single_source_power": {
-          "logLoss": 0.5133860733752421,
-          "brierScore": 0.1666616001863711,
-          "marginMae": 9.243559006543974,
-          "calibrationError": 0.040973210619978745,
-          "upsetRecall": 0.13513513513513514,
+          "logLoss": 0.5136517016303803,
+          "brierScore": 0.16743484075195286,
+          "marginMae": 9.325281683746438,
+          "calibrationError": 0.05100604122536931,
+          "upsetRecall": 0.3783783783783784,
           "meanCalibrationShift": 0.0
         },
         "current_stack_compat": {
-          "logLoss": 0.5442148900253347,
-          "brierScore": 0.1694826437879595,
-          "marginMae": 9.390734618407624,
-          "calibrationError": 0.05861129825274698,
-          "upsetRecall": 0.02702702702702703,
+          "logLoss": 0.5515557488697378,
+          "brierScore": 0.17258322991349775,
+          "marginMae": 9.535012378563792,
+          "calibrationError": 0.06891821885825218,
+          "upsetRecall": 0.0945945945945946,
           "meanCalibrationShift": 0.0
         }
       },
       "winner": {
-        "marginMae": "reduced_candidate_stack",
+        "calibrationError": "gbm_distilled_candidate_stack",
+        "marginMae": "optimized_candidate_stack",
         "logLoss": "enhanced_candidate_stack",
         "brierScore": "reduced_candidate_stack",
-        "calibrationError": "gbm_distilled_candidate_stack",
         "upsetRecall": "best_single_source_net"
       }
     }
