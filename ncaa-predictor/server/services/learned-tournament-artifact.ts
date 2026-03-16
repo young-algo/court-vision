@@ -12,6 +12,10 @@ export interface LearnedTournamentArtifact {
   data_sources: string[];
   source_coverage: SourceCoverage;
   source_weights: Record<string, number>;
+  scaler: {
+    means: Record<string, number>;
+    scales: Record<string, number>;
+  };
   margin_model: {
     intercept: number;
     coefficients: Record<string, number>;

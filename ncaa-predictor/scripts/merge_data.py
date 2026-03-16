@@ -1,10 +1,14 @@
 """
 merge_data.py — Merge Torvik, ESPN BPI, and NET ranking data into a unified teams.json
 
-Inputs (expected in workspace root):
+Required inputs (expected in workspace root):
   - torvik_data.json   (scraped from barttorvik.com/trank.php)
   - bpi_data.json      (scraped from espn.com/mens-college-basketball/bpi)
   - net_data.json      (scraped from warrennolan.com/basketball/2026/net)
+
+Optional inputs (used when present):
+  - evanmiya_data.json         (current-season EvanMiya ratings)
+  - fivethirtyeight_data.json  (current-season 538 power ratings)
 
 Output:
   - client/src/data/teams.json  (merged, normalized, sorted by Torvik rank)
@@ -162,10 +166,28 @@ def load_json(filename: str) -> list:
         return json.load(f)
 
 
+def load_optional_json(*filenames: str) -> list:
+    for filename in filenames:
+        path = os.path.join(WORKSPACE_ROOT, filename)
+        if os.path.exists(path):
+            with open(path) as f:
+                return json.load(f)
+    return []
+
+
+def numeric_value(value):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def main():
     torvik = load_json('torvik_data.json')
     bpi = load_json('bpi_data.json')
     net = load_json('net_data.json')
+    evanmiya = load_optional_json('evanmiya_data.json')
+    fivethirtyeight = load_optional_json('fivethirtyeight_data.json', '538_data.json')
 
     # ----- Build base from Torvik (most complete efficiency data) -----
     teams = {}
@@ -186,6 +208,8 @@ def main():
             'bpi_def': None,
             'bpi_rank': None,
             'net_rank': None,
+            'evanmiya_relative_rating': None,
+            'fivethirtyeight_power': None,
         }
 
     # ----- Merge BPI -----
@@ -207,6 +231,26 @@ def main():
             teams[nname]['net_rank'] = n['net_rank']
             net_matched += 1
 
+    # ----- Merge EvanMiya (optional) -----
+    evanmiya_matched = 0
+    for row in evanmiya:
+        name = normalize(row.get('team_name', row.get('team', '')))
+        if name in teams:
+            teams[name]['evanmiya_relative_rating'] = numeric_value(
+                row.get('evanmiya_relative_rating', row.get('relative_rating', row.get('rating')))
+            )
+            evanmiya_matched += 1
+
+    # ----- Merge 538 (optional) -----
+    fivethirtyeight_matched = 0
+    for row in fivethirtyeight:
+        name = normalize(row.get('team_name', row.get('team', '')))
+        if name in teams:
+            teams[name]['fivethirtyeight_power'] = numeric_value(
+                row.get('fivethirtyeight_power', row.get('power_rating', row.get('power')))
+            )
+            fivethirtyeight_matched += 1
+
     # ----- Sort and save -----
     team_list = sorted(teams.values(), key=lambda x: x['torvik_rank'])
 
@@ -216,17 +260,31 @@ def main():
         json.dump(team_list, f, indent=2)
 
     # ----- Report -----
-    print(f"Torvik teams:  {len(torvik)}")
-    print(f"BPI matched:   {bpi_matched}/{len(bpi)}")
-    print(f"NET matched:   {net_matched}/{len(net)}")
-    print(f"Output:        {len(team_list)} teams → {out_path}")
+    print(f"Torvik teams:              {len(torvik)}")
+    print(f"BPI matched:               {bpi_matched}/{len(bpi)}")
+    print(f"NET matched:               {net_matched}/{len(net)}")
+    if evanmiya:
+        print(f"EvanMiya matched:          {evanmiya_matched}/{len(evanmiya)}")
+    else:
+        print("EvanMiya matched:          skipped (evanmiya_data.json not found)")
+    if fivethirtyeight:
+        print(f"538 matched:               {fivethirtyeight_matched}/{len(fivethirtyeight)}")
+    else:
+        print("538 matched:               skipped (fivethirtyeight_data.json not found)")
+    print(f"Output:                    {len(team_list)} teams → {out_path}")
 
     missing_bpi = [t['name'] for t in team_list if t['bpi'] is None]
     missing_net = [t['name'] for t in team_list if t['net_rank'] is None]
+    missing_evanmiya = [t['name'] for t in team_list if t['evanmiya_relative_rating'] is None]
+    missing_fivethirtyeight = [t['name'] for t in team_list if t['fivethirtyeight_power'] is None]
     if missing_bpi:
         print(f"\nMissing BPI ({len(missing_bpi)}): {missing_bpi}")
     if missing_net:
         print(f"Missing NET ({len(missing_net)}): {missing_net}")
+    if evanmiya and missing_evanmiya:
+        print(f"Missing EvanMiya ({len(missing_evanmiya)}): {missing_evanmiya}")
+    if fivethirtyeight and missing_fivethirtyeight:
+        print(f"Missing 538 ({len(missing_fivethirtyeight)}): {missing_fivethirtyeight}")
 
 
 if __name__ == '__main__':

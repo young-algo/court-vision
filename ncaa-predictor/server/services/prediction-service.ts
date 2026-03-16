@@ -1062,7 +1062,7 @@ export class PredictionService {
       this.learnedArtifact?.calibration.anchors ?? CALIBRATION_ANCHORS,
     );
     const observedShare = observedSourceCount / sourceCount;
-    const shrink = clamp(0.93 - disagreementIndex * 0.01 - (1 - observedShare) * 0.10, 0.75, 0.95);
+    const shrink = clamp(0.97 - disagreementIndex * 0.005 - (1 - observedShare) * 0.04, 0.85, 0.97);
     return clamp(0.5 + (isotonic - 0.5) * shrink, 0.01, 0.99);
   }
 
@@ -1151,24 +1151,35 @@ export class PredictionService {
       featureMap["missing_massey_ordinal_rank"] = missingMassey;
       featureMap["massey_ordinal_rank_percentile_diff"] = aMassey! - bMassey!;
 
+      const kenpomDiff = snapshotA.efficiencyMargin - snapshotB.efficiencyMargin;
       featureMap["missing_kenpom_badj_em"] = 0;
-      featureMap["kenpom_badj_em_power_diff"] = snapshotA.efficiencyMargin - snapshotB.efficiencyMargin;
+      featureMap["kenpom_badj_em_power_diff"] = kenpomDiff;
 
-      featureMap["missing_evanmiya_relative_rating"] = 1;
-      featureMap["evanmiya_relative_rating_power_diff"] = 0;
+      const missingEvanMiya =
+        snapshotA.evanmiyaRelativeRating == null || snapshotB.evanmiyaRelativeRating == null ? 1 : 0;
+      featureMap["missing_evanmiya_relative_rating"] = missingEvanMiya;
+      featureMap["evanmiya_relative_rating_power_diff"] =
+        missingEvanMiya === 1 ? 0 : snapshotA.evanmiyaRelativeRating! - snapshotB.evanmiyaRelativeRating!;
 
-      featureMap["missing_fivethirtyeight_power"] = 1;
-      featureMap["fivethirtyeight_power_power_diff"] = 0;
+      const missingFiveThirtyEight =
+        snapshotA.fivethirtyeightPower == null || snapshotB.fivethirtyeightPower == null ? 1 : 0;
+      featureMap["missing_fivethirtyeight_power"] = missingFiveThirtyEight;
+      featureMap["fivethirtyeight_power_power_diff"] =
+        missingFiveThirtyEight === 1 ? 0 : snapshotA.fivethirtyeightPower! - snapshotB.fivethirtyeightPower!;
+
+      featureMap["seed_kenpom_interaction"] = seedDiff * kenpomDiff;
+      featureMap["abs_seed_same_conference_interaction"] = Math.abs(seedDiff) * sameConference;
 
       featureMap["missing_resume_rank_blend"] = 0;
       // NOTE: semantic divergence from Python training pipeline.
       // Python computes this as the average of 7 resume rank percentile diffs.
       // TS uses (resumeScore diff) / 100. The scaler normalizes both, but the
-      // reduced feature set intentionally excludes this feature to avoid the mismatch.
+      // optimized feature set excludes this field, so the mismatch does not affect promotion.
       featureMap["resume_rank_blend_percentile_diff"] = (snapshotA.resumeScore - snapshotB.resumeScore) / 100;
 
       featureMap["available_predictive_rank_count"] = 3 - (missingBpi + missingNet + missingMassey);
-      featureMap["available_power_feature_count"] = 2;
+      featureMap["available_power_feature_count"] =
+        3 - (featureMap["missing_kenpom_badj_em"] + missingEvanMiya + missingFiveThirtyEight);
       featureMap["available_resume_feature_count"] = 1;
     }
 

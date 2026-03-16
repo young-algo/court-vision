@@ -66,6 +66,31 @@ CANDIDATE_FEATURES = [
     *COMMON_CANDIDATE_CONTEXT_FEATURES,
     *CORE_MISSING_FEATURES,
 ]
+OPTIMIZED_CANDIDATE_SIGNAL_FEATURES = [
+    "kenpom_badj_em_power_diff",
+    "massey_ordinal_rank_percentile_diff",
+    "bpi_rank_percentile_diff",
+    "evanmiya_relative_rating_power_diff",
+]
+OPTIMIZED_CANDIDATE_MISSING_FEATURES = [
+    "missing_kenpom_badj_em",
+    "missing_massey_ordinal_rank",
+    "missing_bpi_rank",
+    "missing_evanmiya_relative_rating",
+]
+OPTIMIZED_CANDIDATE_CONTEXT_FEATURES = [
+    "seed_diff",
+    "seed_kenpom_interaction",
+    "abs_seed_same_conference_interaction",
+]
+OPTIMIZED_CANDIDATE_FEATURES = [
+    *OPTIMIZED_CANDIDATE_SIGNAL_FEATURES,
+    *OPTIMIZED_CANDIDATE_CONTEXT_FEATURES,
+    *OPTIMIZED_CANDIDATE_MISSING_FEATURES,
+]
+OPTIMIZED_WIN_FEATURES = [
+    feature for feature in OPTIMIZED_CANDIDATE_FEATURES if feature != "seed_diff"
+]
 EXPERIMENTAL_CANDIDATE_FEATURES = [
     *ALL_CANDIDATE_SIGNAL_FEATURES,
     *COMMON_CANDIDATE_CONTEXT_FEATURES,
@@ -101,6 +126,8 @@ HIGHER_IS_BETTER = {"upsetRecall"}
 @dataclass
 class ModelBundle:
     feature_names: list[str]
+    margin_feature_names: list[str]
+    win_feature_names: list[str]
     scaler: StandardScaler
     margin_model: RidgeCV
     win_model: CalibratedClassifierCV
@@ -125,6 +152,10 @@ def candidate_feature_frame(frame: pd.DataFrame) -> pd.DataFrame:
 
 def experimental_candidate_feature_frame(frame: pd.DataFrame) -> pd.DataFrame:
     return numeric_frame(frame, EXPERIMENTAL_CANDIDATE_FEATURES)[EXPERIMENTAL_CANDIDATE_FEATURES]
+
+
+def optimized_candidate_feature_frame(frame: pd.DataFrame) -> pd.DataFrame:
+    return numeric_frame(frame, OPTIMIZED_CANDIDATE_FEATURES)[OPTIMIZED_CANDIDATE_FEATURES]
 
 
 def reduced_candidate_feature_frame(frame: pd.DataFrame) -> pd.DataFrame:
@@ -170,16 +201,39 @@ def probability_to_logit(probabilities: np.ndarray) -> np.ndarray:
     return np.log(clipped / (1 - clipped))
 
 
-def fit_model_bundle(features: pd.DataFrame, y_margin: pd.Series, y_win: pd.Series) -> ModelBundle:
+def fit_model_bundle(
+    features: pd.DataFrame,
+    y_margin: pd.Series,
+    y_win: pd.Series,
+    *,
+    win_feature_names: list[str] | None = None,
+) -> ModelBundle:
+    feature_names = list(features.columns)
+    margin_feature_names = feature_names
+    win_feature_names = win_feature_names or feature_names
     scaler = StandardScaler()
-    scaled = scaler.fit_transform(features)
-    margin_model = RidgeCV(alphas=[10.0, 100.0, 1000.0, 5000.0, 10000.0]).fit(scaled, y_margin)
-    
-    base_win_model = LogisticRegression(max_iter=4000, C=0.1, class_weight='balanced')
-    win_model = CalibratedClassifierCV(base_win_model, cv=5, method='isotonic').fit(scaled, y_win)
+    scaled = scaler.fit_transform(features[feature_names])
+    feature_index = {feature: index for index, feature in enumerate(feature_names)}
+    margin_indices = [feature_index[feature] for feature in margin_feature_names]
+    win_indices = [feature_index[feature] for feature in win_feature_names]
+
+    margin_model = RidgeCV(alphas=[10.0, 100.0, 1000.0, 5000.0, 10000.0]).fit(
+        scaled[:, margin_indices],
+        y_margin,
+    )
+
+    class_counts = pd.Series(y_win).value_counts()
+    cv_folds = max(2, min(5, int(class_counts.min())))
+    base_win_model = LogisticRegression(max_iter=4000, C=0.1, class_weight="balanced")
+    win_model = CalibratedClassifierCV(base_win_model, cv=cv_folds, method="isotonic").fit(
+        scaled[:, win_indices],
+        y_win,
+    )
 
     return ModelBundle(
-        feature_names=list(features.columns),
+        feature_names=feature_names,
+        margin_feature_names=margin_feature_names,
+        win_feature_names=win_feature_names,
         scaler=scaler,
         margin_model=margin_model,
         win_model=win_model,
@@ -188,17 +242,14 @@ def fit_model_bundle(features: pd.DataFrame, y_margin: pd.Series, y_win: pd.Seri
 
 def predict_bundle(bundle: ModelBundle, features: pd.DataFrame) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     scaled = bundle.scaler.transform(features[bundle.feature_names])
-    predicted_margin = bundle.margin_model.predict(scaled)
-    # The base logic predicts probability inside the CalibratedClassifier CV ensemble
-    calibrated_probability = bundle.win_model.predict_proba(scaled)[:, 1]
-    
-    # We still need a "raw" representation to compare shift, but we can't get it easily 
-    # directly from the ensemble without looping over calibrators. However, since the problem 
-    # is that we *shouldn't* care about the raw, uncalibrated overfitted probability, we can 
-    # just return the calibrated probability for both, or use the mean of base estimators.
-    # To keep the signature the same, we'll return calibrated for both.
+    feature_index = {feature: index for index, feature in enumerate(bundle.feature_names)}
+    margin_indices = [feature_index[feature] for feature in bundle.margin_feature_names]
+    win_indices = [feature_index[feature] for feature in bundle.win_feature_names]
+
+    predicted_margin = bundle.margin_model.predict(scaled[:, margin_indices])
+    calibrated_probability = bundle.win_model.predict_proba(scaled[:, win_indices])[:, 1]
     raw_probability = calibrated_probability.copy()
-    
+
     return predicted_margin, np.clip(raw_probability, 0.01, 0.99), np.clip(calibrated_probability, 0.01, 0.99)
 
 
@@ -348,8 +399,14 @@ def fit_and_predict(
     train: pd.DataFrame,
     holdout: pd.DataFrame,
     baseline_detail: str | None = None,
+    win_feature_names: list[str] | None = None,
 ) -> tuple[dict[str, float], pd.DataFrame]:
-    bundle = fit_model_bundle(train_features, train["margin"], train["team_win"])
+    bundle = fit_model_bundle(
+        train_features,
+        train["margin"],
+        train["team_win"],
+        win_feature_names=win_feature_names,
+    )
     predicted_margin, raw_probability, calibrated_probability = predict_bundle(bundle, holdout_features)
     metrics = metrics_for_predictions(holdout, calibrated_probability, raw_probability, predicted_margin)
     metrics["holdoutSeason"] = int(holdout["season"].iloc[0])
@@ -457,6 +514,8 @@ def feature_semantics() -> list[dict[str, str]]:
     context_features = {
         "seed_diff": ("resume_context", "lower_is_better"),
         "same_conference": ("resume_context", "higher_is_better"),
+        "seed_kenpom_interaction": ("interaction", "lower_is_better"),
+        "abs_seed_same_conference_interaction": ("interaction", "higher_is_better"),
         "available_predictive_rank_count": ("missingness", "higher_is_better"),
         "available_power_feature_count": ("missingness", "higher_is_better"),
         "available_resume_feature_count": ("missingness", "higher_is_better"),
@@ -517,11 +576,14 @@ def source_coverage(frame: pd.DataFrame) -> dict[str, object]:
 
 
 def source_weights_from_candidate(bundle: ModelBundle) -> dict[str, float]:
-    coefficients = bundle.margin_model.coef_
+    margin_coefficients = {
+        feature: float(bundle.margin_model.coef_[index])
+        for index, feature in enumerate(bundle.margin_feature_names)
+    }
     weight_map = {
-        feature: abs(float(coefficients[index]))
-        for index, feature in enumerate(bundle.feature_names)
-        if feature in CORE_CANDIDATE_SIGNAL_FEATURES
+        feature: abs(margin_coefficients[feature])
+        for feature in ALL_CANDIDATE_SIGNAL_FEATURES
+        if feature in margin_coefficients
     }
     total = sum(weight_map.values()) or 1.0
     return {feature: round(value / total, 4) for feature, value in weight_map.items()}
@@ -529,20 +591,27 @@ def source_weights_from_candidate(bundle: ModelBundle) -> dict[str, float]:
 
 def candidate_feature_importance(bundle: ModelBundle) -> list[dict[str, float | str]]:
     importance = []
-    
-    # Calculate the mean win coefficient from the CV ensemble
+
     base_estimators = [calibrator.estimator for calibrator in bundle.win_model.calibrated_classifiers_]
     mean_win_coef = np.mean([est.coef_[0] for est in base_estimators], axis=0)
-    
-    for index, feature in enumerate(bundle.feature_names):
+    win_coefficients = {
+        feature: float(mean_win_coef[index])
+        for index, feature in enumerate(bundle.win_feature_names)
+    }
+    margin_coefficients = {
+        feature: float(bundle.margin_model.coef_[index])
+        for index, feature in enumerate(bundle.margin_feature_names)
+    }
+
+    for feature in bundle.feature_names:
+        margin_coefficient = margin_coefficients.get(feature, 0.0)
+        win_coefficient = win_coefficients.get(feature, 0.0)
         importance.append(
             {
                 "feature": feature,
-                "marginCoefficient": float(bundle.margin_model.coef_[index]),
-                "winCoefficient": float(mean_win_coef[index]),
-                "absoluteMagnitude": float(
-                    abs(bundle.margin_model.coef_[index]) + abs(mean_win_coef[index])
-                ),
+                "marginCoefficient": margin_coefficient,
+                "winCoefficient": win_coefficient,
+                "absoluteMagnitude": float(abs(margin_coefficient) + abs(win_coefficient)),
             }
         )
     return sorted(importance, key=lambda row: row["absoluteMagnitude"], reverse=True)
@@ -552,13 +621,18 @@ def calibration_anchor_rows(
     raw_probability: np.ndarray,
     y_true: np.ndarray,
 ) -> list[dict[str, float]]:
-    iso = IsotonicRegression(out_of_bounds='clip', y_min=0.02, y_max=0.98)
-    iso.fit(raw_probability, y_true)
+    iso = IsotonicRegression(out_of_bounds="clip", y_min=0.02, y_max=0.98)
+    anchored_raw_probability = np.concatenate([raw_probability, np.array([0.5])])
+    anchored_y_true = np.concatenate([y_true, np.array([0.5])])
+    iso.fit(anchored_raw_probability, anchored_y_true)
     quantiles = [0.05, 0.15, 0.25, 0.5, 0.75, 0.9]
-    raw_values = np.quantile(raw_probability, quantiles)
+    raw_values = np.unique(np.append(np.quantile(raw_probability, quantiles), 0.5))
     calibrated_values = iso.predict(raw_values)
     return [
-        {"raw": float(r), "calibrated": float(c)}
+        {
+            "raw": float(r),
+            "calibrated": 0.5 if math.isclose(float(r), 0.5, abs_tol=1e-9) else float(c),
+        }
         for r, c in zip(raw_values, calibrated_values)
     ]
 
@@ -572,15 +646,14 @@ def candidate_artifact(
     pooled_raw_probability: np.ndarray | None = None,
     pooled_y_true: np.ndarray | None = None,
 ) -> dict[str, object]:
-    # Use pooled out-of-sample predictions for calibration when available
     if pooled_raw_probability is not None and pooled_y_true is not None:
         raw_probability = pooled_raw_probability
         y_true = pooled_y_true
     else:
-        all_features = candidate_feature_frame(frame)
+        all_features = numeric_frame(frame, bundle.feature_names)[bundle.feature_names]
         _, raw_probability, _ = predict_bundle(bundle, all_features)
         y_true = frame["team_win"].to_numpy()
-    
+
     base_estimators = [calibrator.estimator for calibrator in bundle.win_model.calibrated_classifiers_]
     mean_win_coef = np.mean([est.coef_[0] for est in base_estimators], axis=0)
     return {
@@ -614,14 +687,14 @@ def candidate_artifact(
             "intercept": float(bundle.margin_model.intercept_),
             "coefficients": {
                 feature: float(bundle.margin_model.coef_[index])
-                for index, feature in enumerate(bundle.feature_names)
+                for index, feature in enumerate(bundle.margin_feature_names)
             },
         },
         "win_model": {
             "intercept": float(np.mean([c.estimator.intercept_[0] for c in bundle.win_model.calibrated_classifiers_])),
             "coefficients": {
                 feature: float(mean_win_coef[index])
-                for index, feature in enumerate(bundle.feature_names)
+                for index, feature in enumerate(bundle.win_feature_names)
             },
         },
         "calibration": {"anchors": calibration_anchor_rows(raw_probability, y_true)},
@@ -674,6 +747,17 @@ def rolling_backtest(frame: pd.DataFrame) -> tuple[list[dict[str, object]], dict
         )
         metrics_rows.append(candidate_metrics)
         predictions.setdefault("candidate_stack", []).append(candidate_predictions)
+
+        optimized_metrics, optimized_predictions = fit_and_predict(
+            "optimized_candidate_stack",
+            optimized_candidate_feature_frame(train),
+            optimized_candidate_feature_frame(holdout),
+            train,
+            holdout,
+            win_feature_names=OPTIMIZED_WIN_FEATURES,
+        )
+        metrics_rows.append(optimized_metrics)
+        predictions.setdefault("optimized_candidate_stack", []).append(optimized_predictions)
 
         experimental_metrics, experimental_predictions = fit_and_predict(
             "candidate_stack_with_massey_master",
@@ -805,10 +889,13 @@ def main() -> None:
         frame,
         [
             *CANDIDATE_FEATURES,
+            *OPTIMIZED_CANDIDATE_FEATURES,
             "margin",
             "team_win",
             "seed_diff",
             "same_conference",
+            "seed_kenpom_interaction",
+            "abs_seed_same_conference_interaction",
             "legacy_source_coverage_count",
             "team_legacy_bpi_value",
             "team_legacy_net_rank",
@@ -827,25 +914,44 @@ def main() -> None:
     aggregate = aggregate_metrics(backtest_frame)
     print_summary(aggregate)
 
-    # Determine best candidate: prefer reduced_candidate_stack if it beats baselines
-    best_candidate_name = "candidate_stack"
-    if "reduced_candidate_stack" in aggregate:
-        reduced_metrics = aggregate["reduced_candidate_stack"]
-        reduced_eligible = should_promote(
-            reduced_metrics,
-            {name: aggregate[name] for name in PROMOTION_BASELINES if name in aggregate},
+    # Determine best candidate: prefer eligible stacks with the best guardrail-safe log loss.
+    candidate_preference = [
+        "optimized_candidate_stack",
+        "candidate_stack",
+        "reduced_candidate_stack",
+        "candidate_stack_with_massey_master",
+    ]
+    eligible_candidates = [
+        name
+        for name in candidate_preference
+        if name in aggregate
+        and should_promote(
+            aggregate[name],
+            {baseline: aggregate[baseline] for baseline in PROMOTION_BASELINES if baseline in aggregate},
         )
-        candidate_eligible = should_promote(
-            aggregate["candidate_stack"],
-            {name: aggregate[name] for name in PROMOTION_BASELINES if name in aggregate},
-        )
-        # Prefer reduced if it's eligible, or if both are eligible and it has better log loss
-        if reduced_eligible and (not candidate_eligible or reduced_metrics["logLoss"] <= aggregate["candidate_stack"]["logLoss"]):
-            best_candidate_name = "reduced_candidate_stack"
+    ]
+    if eligible_candidates:
+        best_candidate_name = min(eligible_candidates, key=lambda name: aggregate[name]["logLoss"])
+    else:
+        available_candidates = [name for name in candidate_preference if name in aggregate]
+        best_candidate_name = min(available_candidates, key=lambda name: aggregate[name]["logLoss"])
 
     # Train the best candidate on all data
-    if best_candidate_name == "reduced_candidate_stack":
+    if best_candidate_name == "optimized_candidate_stack":
+        candidate_bundle = fit_model_bundle(
+            optimized_candidate_feature_frame(frame),
+            frame["margin"],
+            frame["team_win"],
+            win_feature_names=OPTIMIZED_WIN_FEATURES,
+        )
+    elif best_candidate_name == "reduced_candidate_stack":
         candidate_bundle = fit_model_bundle(reduced_candidate_feature_frame(frame), frame["margin"], frame["team_win"])
+    elif best_candidate_name == "candidate_stack_with_massey_master":
+        candidate_bundle = fit_model_bundle(
+            experimental_candidate_feature_frame(frame),
+            frame["margin"],
+            frame["team_win"],
+        )
     else:
         candidate_bundle = fit_model_bundle(candidate_feature_frame(frame), frame["margin"], frame["team_win"])
     candidate_metrics = aggregate[best_candidate_name]

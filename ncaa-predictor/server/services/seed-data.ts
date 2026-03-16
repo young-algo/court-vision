@@ -26,6 +26,8 @@ interface RawTeamRow {
   bpi_def: number | null;
   bpi_rank: number | null;
   net_rank: number | null;
+  evanmiya_relative_rating?: number | null;
+  fivethirtyeight_power?: number | null;
 }
 
 export interface SeedData {
@@ -223,6 +225,8 @@ function createSnapshot(team: Team, raw: RawTeamRow): TeamRatingSnapshot {
     bpiDefense: raw.bpi_def,
     bpiRank: raw.bpi_rank,
     netRank: raw.net_rank,
+    evanmiyaRelativeRating: raw.evanmiya_relative_rating ?? null,
+    fivethirtyeightPower: raw.fivethirtyeight_power ?? null,
     resumeScore: computeResumeScore(raw),
     recentForm: computeRecentForm(raw),
     conferenceStrength: conferenceStrength(raw.conference),

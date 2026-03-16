@@ -2,7 +2,7 @@
   "id": "tournament-consensus-candidate",
   "label": "Learned Tournament Consensus Candidate",
   "model_type": "learned_tournament_consensus",
-  "generated_at": "2026-03-16T02:29:01.881638+00:00",
+  "generated_at": "2026-03-16T02:55:13.686498+00:00",
   "snapshot_policy": "selection_sunday_latest_stable",
   "training_seasons": [
     2016,
@@ -137,29 +137,29 @@
     }
   },
   "margin_model": {
-    "intercept": 1.2543724641323509e-31,
+    "intercept": 2.890934233794166e-31,
     "coefficients": {
-      "massey_ordinal_rank_percentile_diff": -0.5767157041023161,
-      "kenpom_badj_em_power_diff": 7.563827249420152,
-      "seed_diff": -3.0387555918064386,
-      "missing_massey_ordinal_rank": -1.0658141036401503e-14,
-      "missing_kenpom_badj_em": -1.865174681370263e-14
+      "massey_ordinal_rank_percentile_diff": -0.5767157041031226,
+      "kenpom_badj_em_power_diff": 7.563827249419354,
+      "seed_diff": -3.0387555918056854,
+      "missing_massey_ordinal_rank": -4.5023026176501227e-14,
+      "missing_kenpom_badj_em": -2.0676907888287705e-15
     }
   },
   "win_model": {
-    "intercept": -2.188984857439637e-06,
+    "intercept": -2.188984881435467e-06,
     "coefficients": {
-      "massey_ordinal_rank_percentile_diff": 0.03104060038092964,
+      "massey_ordinal_rank_percentile_diff": 0.031040600380929557,
       "kenpom_badj_em_power_diff": 0.7640449523107101,
       "seed_diff": -0.5448448828132715,
-      "missing_massey_ordinal_rank": 1.3503625647540138e-05,
-      "missing_kenpom_badj_em": 2.336914539386443e-05
+      "missing_massey_ordinal_rank": 1.3503625541146606e-05,
+      "missing_kenpom_badj_em": 2.3369145283843728e-05
     }
   },
   "calibration": {
     "anchors": [
       {
-        "raw": 0.036170215562708705,
+        "raw": 0.036170215562708746,
         "calibrated": 0.07692307692307693
       },
       {
@@ -172,23 +172,23 @@
       },
       {
         "raw": 0.5,
-        "calibrated": 0.4666666666666667
+        "calibrated": 0.5
       },
       {
         "raw": 0.6777777777777778,
         "calibrated": 0.6587301587301587
       },
       {
-        "raw": 0.9165560548583425,
+        "raw": 0.9165560548583422,
         "calibrated": 0.875
       }
     ]
   },
   "metrics": {
-    "logLoss": 0.5702093521012532,
-    "brierScore": 0.19017642762500117,
-    "marginMae": 9.465514779886881,
-    "calibrationError": 0.10854563197985256,
+    "logLoss": 0.5702093521012535,
+    "brierScore": 0.19017642762500125,
+    "marginMae": 9.465514779886869,
+    "calibrationError": 0.10854563197985222,
     "upsetRecall": 0.0835127591706539
   },
   "artifact_path": "data/models/tournament-consensus-candidate.json",
@@ -263,6 +263,16 @@
     {
       "feature": "same_conference",
       "family": "resume_context",
+      "direction": "higher_is_better"
+    },
+    {
+      "feature": "seed_kenpom_interaction",
+      "family": "interaction",
+      "direction": "lower_is_better"
+    },
+    {
+      "feature": "abs_seed_same_conference_interaction",
+      "family": "interaction",
       "direction": "higher_is_better"
     },
     {

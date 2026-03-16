@@ -263,6 +263,10 @@ def apply_semantic_features(features: pd.DataFrame) -> pd.DataFrame:
         enriched["opponent_score"],
         errors="coerce",
     )
+    enriched["seed_kenpom_interaction"] = 0.0
+    enriched["abs_seed_same_conference_interaction"] = (
+        enriched["seed_diff"].abs() * enriched["same_conference"]
+    ).astype(float)
     enriched["team_win"] = (enriched["margin"] > 0).astype(int)
 
     for feature in RANK_FEATURES:
@@ -270,6 +274,10 @@ def apply_semantic_features(features: pd.DataFrame) -> pd.DataFrame:
 
     for feature in POWER_FEATURES:
         add_power_feature(enriched, feature)
+
+    enriched["seed_kenpom_interaction"] = (
+        enriched["seed_diff"] * enriched["kenpom_badj_em_power_diff"]
+    ).where(enriched["missing_kenpom_badj_em"] == 0, 0.0)
 
     for feature in LOWER_BETTER_FEATURES:
         add_lower_better_feature(enriched, feature)

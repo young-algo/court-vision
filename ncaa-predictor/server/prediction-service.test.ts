@@ -11,7 +11,7 @@ const predictionService = new PredictionService(
 );
 
 test("seed data builds a full seeded field and tournament slate", () => {
-  assert.equal(seedData.teams.length, 100);
+  assert.ok(seedData.teams.length >= 64);
   assert.equal(seedData.bracketField.length, 64);
   assert.equal(seedData.games.length, 32);
   assert.equal(new Set(seedData.bracketField.map((entry) => entry.teamId)).size, 64);

@@ -67,6 +67,8 @@ export interface TeamRatingSnapshot {
   bpiDefense: number | null;
   bpiRank: number | null;
   netRank: number | null;
+  evanmiyaRelativeRating: number | null;
+  fivethirtyeightPower: number | null;
   resumeScore: number;
   recentForm: number;
   conferenceStrength: number;

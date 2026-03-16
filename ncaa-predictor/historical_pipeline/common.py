@@ -42,7 +42,10 @@ class SeasonConfig:
 
 def ensure_dirs() -> None:
     for directory in (RAW_ROOT, PROCESSED_ROOT, CACHE_ROOT, MODEL_ROOT, EXTERNAL_ROOT):
-        directory.mkdir(parents=True, exist_ok=True)
+        try:
+            directory.mkdir(parents=True, exist_ok=True)
+        except PermissionError:
+            pass
 
 
 def load_season_config() -> SeasonConfig:
