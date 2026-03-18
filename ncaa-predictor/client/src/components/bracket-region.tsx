@@ -22,6 +22,18 @@ export function BracketRegion({ region, teams }: BracketRegionProps) {
       <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {region}
       </div>
+      <div className="flex items-center gap-2 px-2 mb-1">
+        <div className="w-5" />
+        <div className="flex-1" />
+        <div className="flex gap-2 text-[9px] uppercase tracking-[0.12em] text-muted-foreground/60">
+          <span title="Sweet 16">S16</span>
+          <span title="Elite 8" className="hidden sm:inline">E8</span>
+          <span title="Final Four">F4</span>
+        </div>
+        <div className="w-12 text-right text-[9px] uppercase tracking-[0.12em] text-muted-foreground/60">
+          Champ
+        </div>
+      </div>
       <div className="space-y-0.5">
         {ordered.map((entry, i) => {
           const isPairBoundary = i % 2 === 0 && i > 0;

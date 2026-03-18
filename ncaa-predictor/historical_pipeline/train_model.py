@@ -94,6 +94,13 @@ OPTIMIZED_CANDIDATE_CONTEXT_FEATURES = [
     "seed_kenpom_interaction",
     "abs_seed_same_conference_interaction",
 ]
+ELO_FEATURES = [
+    "elo_diff",
+    "elo_rank_percentile_diff",
+]
+ELO_MISSING_FEATURES = [
+    "missing_elo",
+]
 NEW_CONTEXT_FEATURES = [
     "round_seed_interaction",
     "round_kenpom_interaction",
@@ -110,6 +117,8 @@ OPTIMIZED_CANDIDATE_FEATURES = [
 ENHANCED_CANDIDATE_FEATURES = [
     *OPTIMIZED_CANDIDATE_FEATURES,
     *NEW_CONTEXT_FEATURES,
+    *ELO_FEATURES,
+    *ELO_MISSING_FEATURES,
     # BETTING_FEATURES intentionally excluded: coverage too sparse (<12% per training
     # window in rolling backtest) causes sign inversion and degrades log-loss by ~0.004.
     # Betting signal is surfaced live in the UI but not used in the learned artifact.
@@ -440,7 +449,12 @@ def fit_distilled_model_bundle(
     *,
     win_feature_names: list[str] | None = None,
     sample_weight: np.ndarray | None = None,
+    gbm_params: dict | None = None,
+    distillation_blend: float | None = None,
 ) -> ModelBundle:
+    _gbm_params = gbm_params or GBM_DISTILLATION_PARAMS
+    _blend = distillation_blend if distillation_blend is not None else DISTILLATION_BLEND
+
     feature_names = list(features.columns)
     margin_feature_names = feature_names
     win_feature_names = win_feature_names or feature_names
@@ -450,22 +464,22 @@ def fit_distilled_model_bundle(
     margin_indices = [feature_index[feature] for feature in margin_feature_names]
     win_indices = [feature_index[feature] for feature in win_feature_names]
 
-    margin_teacher = GradientBoostingRegressor(**GBM_DISTILLATION_PARAMS)
+    margin_teacher = GradientBoostingRegressor(**_gbm_params)
     margin_teacher.fit(scaled[:, margin_indices], y_margin, sample_weight=sample_weight)
     teacher_margin = margin_teacher.predict(scaled[:, margin_indices])
-    distilled_margin_target = DISTILLATION_BLEND * teacher_margin + (1 - DISTILLATION_BLEND) * y_margin.to_numpy()
+    distilled_margin_target = _blend * teacher_margin + (1 - _blend) * y_margin.to_numpy()
     margin_model = RidgeCV(alphas=[10.0, 100.0, 1000.0, 5000.0, 10000.0]).fit(
         scaled[:, margin_indices],
         distilled_margin_target,
         sample_weight=sample_weight,
     )
 
-    win_teacher = GradientBoostingClassifier(**GBM_DISTILLATION_PARAMS)
+    win_teacher = GradientBoostingClassifier(**_gbm_params)
     win_teacher.fit(scaled[:, win_indices], y_win, sample_weight=sample_weight)
     teacher_probability = np.clip(win_teacher.predict_proba(scaled[:, win_indices])[:, 1], 0.01, 0.99)
     empirical_probability = np.clip(y_win.to_numpy() * 0.98 + 0.01, 0.01, 0.99)
     distilled_probability_target = np.clip(
-        DISTILLATION_BLEND * teacher_probability + (1 - DISTILLATION_BLEND) * empirical_probability,
+        _blend * teacher_probability + (1 - _blend) * empirical_probability,
         0.01,
         0.99,
     )
@@ -709,6 +723,8 @@ def fit_and_predict_distilled(
     holdout: pd.DataFrame,
     baseline_detail: str | None = None,
     win_feature_names: list[str] | None = None,
+    gbm_params: dict | None = None,
+    distillation_blend: float | None = None,
 ) -> tuple[dict[str, float], pd.DataFrame]:
     temporal_weights = compute_training_weights(train)
     bundle = fit_distilled_model_bundle(
@@ -717,6 +733,8 @@ def fit_and_predict_distilled(
         train["team_win"],
         win_feature_names=win_feature_names,
         sample_weight=temporal_weights,
+        gbm_params=gbm_params,
+        distillation_blend=distillation_blend,
     )
     predicted_margin, raw_probability, calibrated_probability = predict_bundle(bundle, holdout_features)
     metrics = metrics_for_predictions(holdout, calibrated_probability, raw_probability, predicted_margin)
@@ -1155,10 +1173,20 @@ def should_promote(
     return True
 
 
-def rolling_backtest(frame: pd.DataFrame) -> tuple[list[dict[str, object]], dict[str, pd.DataFrame]]:
+def rolling_backtest(
+    frame: pd.DataFrame,
+    tuned_enhanced: dict | None = None,
+    tuned_optimized: dict | None = None,
+) -> tuple[list[dict[str, object]], dict[str, pd.DataFrame]]:
     metrics_rows: list[dict[str, object]] = []
     predictions: dict[str, list[pd.DataFrame]] = {}
     seasons = sorted(frame["season"].dropna().astype(int).unique())
+
+    # Extract per-model tuned params (or None to use defaults)
+    enh_gbm = tuned_enhanced["gbm_params"] if tuned_enhanced else None
+    enh_blend = tuned_enhanced["distillation_blend"] if tuned_enhanced else None
+    opt_gbm = tuned_optimized["gbm_params"] if tuned_optimized else None
+    opt_blend = tuned_optimized["distillation_blend"] if tuned_optimized else None
 
     for train_seasons, holdout_season in rolling_pairs(seasons):
         train = frame[frame["season"].isin(train_seasons)].copy()
@@ -1194,6 +1222,8 @@ def rolling_backtest(frame: pd.DataFrame) -> tuple[list[dict[str, object]], dict
             train,
             holdout,
             win_feature_names=OPTIMIZED_WIN_FEATURES,
+            gbm_params=opt_gbm,
+            distillation_blend=opt_blend,
         )
         metrics_rows.append(distilled_metrics)
         predictions.setdefault("gbm_distilled_candidate_stack", []).append(distilled_predictions)
@@ -1205,6 +1235,8 @@ def rolling_backtest(frame: pd.DataFrame) -> tuple[list[dict[str, object]], dict
             train,
             holdout,
             win_feature_names=ENHANCED_WIN_FEATURES,
+            gbm_params=enh_gbm,
+            distillation_blend=enh_blend,
         )
         metrics_rows.append(enhanced_metrics)
         predictions.setdefault("enhanced_candidate_stack", []).append(enhanced_predictions)
@@ -1323,7 +1355,7 @@ def aggregate_metrics(backtest_rows: pd.DataFrame) -> dict[str, dict[str, float]
     return aggregates
 
 
-ENSEMBLE_MEMBERS = ("enhanced_candidate_stack", "gbm_distilled_candidate_stack", "direct_gbm")
+ENSEMBLE_MEMBERS = ("enhanced_candidate_stack", "gbm_distilled_candidate_stack")
 
 
 def blend_candidate_predictions(
@@ -1466,20 +1498,31 @@ def main() -> None:
         ],
     )
 
-    # Optional hyperparameter tuning via optuna
+    # Optional hyperparameter tuning via optuna — tuned per feature set so
+    # each distilled model gets its own optimal parameters.
+    tuned_enhanced: dict | None = None
+    tuned_optimized: dict | None = None
     if args.tune:
-        tuned = tune_hyperparameters(
+        print("Tuning enhanced feature set...")
+        tuned_enhanced = tune_hyperparameters(
             frame,
             enhanced_candidate_feature_frame,
             win_feature_names=ENHANCED_WIN_FEATURES,
             n_trials=args.tune_trials,
         )
-        global GBM_DISTILLATION_PARAMS, DISTILLATION_BLEND, TEMPORAL_DECAY
-        GBM_DISTILLATION_PARAMS = tuned["gbm_params"]
-        DISTILLATION_BLEND = tuned["distillation_blend"]
-        TEMPORAL_DECAY = tuned["temporal_decay"]
+        print("Tuning optimized feature set...")
+        tuned_optimized = tune_hyperparameters(
+            frame,
+            optimized_candidate_feature_frame,
+            win_feature_names=OPTIMIZED_WIN_FEATURES,
+            n_trials=args.tune_trials,
+        )
 
-    backtest_rows, predictions_by_model = rolling_backtest(frame)
+    backtest_rows, predictions_by_model = rolling_backtest(
+        frame,
+        tuned_enhanced=tuned_enhanced,
+        tuned_optimized=tuned_optimized,
+    )
     if not backtest_rows:
         raise SystemExit("Not enough seasonal coverage to run rolling validation.")
 
@@ -1523,6 +1566,12 @@ def main() -> None:
     final_weights = compute_training_weights(frame)
     training_seasons = sorted(frame["season"].dropna().astype(int).unique().tolist())
 
+    # Resolve per-model tuned params for final artifact training
+    _enh_gbm = tuned_enhanced["gbm_params"] if tuned_enhanced else None
+    _enh_blend = tuned_enhanced["distillation_blend"] if tuned_enhanced else None
+    _opt_gbm = tuned_optimized["gbm_params"] if tuned_optimized else None
+    _opt_blend = tuned_optimized["distillation_blend"] if tuned_optimized else None
+
     if best_candidate_name == "ensemble_blend":
         # Train both ensemble members on the full dataset, then blend into a single artifact
         enhanced_bundle = fit_distilled_model_bundle(
@@ -1531,6 +1580,8 @@ def main() -> None:
             frame["team_win"],
             win_feature_names=ENHANCED_WIN_FEATURES,
             sample_weight=final_weights,
+            gbm_params=_enh_gbm,
+            distillation_blend=_enh_blend,
         )
         distilled_bundle = fit_distilled_model_bundle(
             optimized_candidate_feature_frame(frame),
@@ -1538,6 +1589,8 @@ def main() -> None:
             frame["team_win"],
             win_feature_names=OPTIMIZED_WIN_FEATURES,
             sample_weight=final_weights,
+            gbm_params=_opt_gbm,
+            distillation_blend=_opt_blend,
         )
         # Blend using the same inverse-logLoss weights derived from backtest
         member_losses = [
@@ -1561,6 +1614,8 @@ def main() -> None:
             frame["team_win"],
             win_feature_names=ENHANCED_WIN_FEATURES,
             sample_weight=final_weights,
+            gbm_params=_enh_gbm,
+            distillation_blend=_enh_blend,
         )
     elif best_candidate_name == "gbm_distilled_candidate_stack":
         candidate_bundle = fit_distilled_model_bundle(
@@ -1569,6 +1624,8 @@ def main() -> None:
             frame["team_win"],
             win_feature_names=OPTIMIZED_WIN_FEATURES,
             sample_weight=final_weights,
+            gbm_params=_opt_gbm,
+            distillation_blend=_opt_blend,
         )
     elif best_candidate_name == "optimized_candidate_stack":
         candidate_bundle = fit_model_bundle(

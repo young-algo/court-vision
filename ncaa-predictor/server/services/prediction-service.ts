@@ -1347,6 +1347,13 @@ export class PredictionService {
         featureMap["max_min_rating_spread"] = 0;
       }
 
+      // Elo features -- at runtime we don't have historical Elo ratings
+      // (those are computed from Kaggle game-by-game results during training).
+      // Mark as missing so the model falls back to other signals.
+      featureMap["elo_diff"] = 0;
+      featureMap["elo_rank_percentile_diff"] = 0;
+      featureMap["missing_elo"] = 1;
+
       featureMap["missing_resume_rank_blend"] = 0;
       // Python computes this as the mean of 7 resume rank percentile diffs.
       // At runtime we approximate from resumeScore (scale 15-99) mapped to
