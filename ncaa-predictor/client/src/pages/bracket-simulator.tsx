@@ -9,11 +9,13 @@ import {
   Trophy,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { BracketRegion } from "@/components/bracket-region";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ModelStatusCard } from "@/components/model-status-card";
 import { fetchBracketSimulation, fetchTeams } from "@/lib/api";
 import { formatPercent } from "@/lib/prediction-display";
+import { BRACKET_REGIONS } from "@shared/schema";
 
 export default function BracketSimulatorPage() {
   const [simulations, setSimulations] = useState(4000);
@@ -87,6 +89,20 @@ export default function BracketSimulatorPage() {
       {simulationQuery.data?.modelRun ? <ModelStatusCard modelRun={simulationQuery.data.modelRun} /> : null}
 
       {simulationQuery.data ? (
+        <>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {BRACKET_REGIONS.map((region) => {
+            const regionField = simulationQuery.data!.field.filter((e) => e.region === region);
+            const regionTeams = regionField.map((entry) => ({
+              team: teamsById.get(entry.teamId),
+              seed: entry.seed,
+              odds: roundOdds.find((o) => o.teamId === entry.teamId) ?? {
+                teamId: entry.teamId, roundOf32: 0, sweet16: 0, elite8: 0, finalFour: 0, championship: 0, champion: 0,
+              },
+            }));
+            return <BracketRegion key={region} region={region} teams={regionTeams} />;
+          })}
+        </div>
         <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
           <div className="space-y-6">
             <Card className="px-5 py-5">
@@ -213,6 +229,7 @@ export default function BracketSimulatorPage() {
             </div>
           </Card>
         </div>
+        </>
       ) : null}
     </div>
   );

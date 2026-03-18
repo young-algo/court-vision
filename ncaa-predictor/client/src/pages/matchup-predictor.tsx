@@ -16,6 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { CalibrationChart } from "@/components/calibration-chart";
 import { ModelStatusCard } from "@/components/model-status-card";
 import { OddsDisplay } from "@/components/odds-display";
 import { TeamSearchSelect } from "@/components/team-search-select";
@@ -477,6 +478,7 @@ export default function MatchupPredictor() {
       ) : null}
 
       {modelRun ? <ModelStatusCard modelRun={modelRun} /> : null}
+      <CalibrationChart />
     </div>
   );
 }

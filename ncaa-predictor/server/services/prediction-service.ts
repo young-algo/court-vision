@@ -870,9 +870,14 @@ export class PredictionService {
       .sort((left, right) => left.seed - right.seed);
 
     const roundOf64Winners = ROUND_ONE_PAIRINGS.map(([seedA, seedB]) => {
-      const teamAId = regionEntries.find((entry) => entry.seed === seedA)!.teamId;
-      const teamBId = regionEntries.find((entry) => entry.seed === seedB)!.teamId;
-      const winner = this.simulateNeutralGame(teamAId, teamBId, rng, 1);
+      const entryA = regionEntries.find((entry) => entry.seed === seedA);
+      const entryB = regionEntries.find((entry) => entry.seed === seedB);
+      if (!entryA || !entryB) {
+        const fallback = entryA?.teamId ?? entryB?.teamId ?? regionEntries[0]?.teamId;
+        if (fallback && counters.has(fallback)) counters.get(fallback)!.roundOf32 += 1;
+        return fallback ?? "";
+      }
+      const winner = this.simulateNeutralGame(entryA.teamId, entryB.teamId, rng, 1);
       counters.get(winner)!.roundOf32 += 1;
       return winner;
     });
@@ -1285,6 +1290,9 @@ export class PredictionService {
       featureMap["missing_net_rank"] = missingNet;
       featureMap["net_rank_percentile_diff"] = missingNet ? 0 : aNet! - bNet!;
 
+      // Training uses Kaggle Massey ordinals (a consensus of ~150 systems).
+      // At runtime we use torvikRank as the best available proxy -- both are
+      // ordinal ranks of D1 teams converted through the same percentile transform.
       const aMassey = getPct(teamA.torvikRank);
       const bMassey = getPct(teamB.torvikRank);
       const missingMassey = 0;
@@ -1319,13 +1327,16 @@ export class PredictionService {
       featureMap["seed_diff_squared"] = seedDiff * seedDiff;
       featureMap["log_abs_seed_diff"] = Math.log1p(Math.abs(seedDiff));
 
-      // Rating disagreement features
+      // Rating disagreement features -- normalize to common scale before computing.
+      // Power diffs are divided by typical D1 range to match percentile-diff scale.
+      const KENPOM_SCALE = 30.0;
+      const EVANMIYA_SCALE = 25.0;
       const availableDiffs: number[] = [];
       if (!missingBpi) availableDiffs.push(featureMap["bpi_rank_percentile_diff"]);
       if (!missingNet) availableDiffs.push(featureMap["net_rank_percentile_diff"]);
       if (!missingMassey) availableDiffs.push(featureMap["massey_ordinal_rank_percentile_diff"]);
-      if (featureMap["missing_kenpom_badj_em"] === 0) availableDiffs.push(kenpomDiff);
-      if (missingEvanMiya === 0) availableDiffs.push(featureMap["evanmiya_relative_rating_power_diff"]);
+      if (featureMap["missing_kenpom_badj_em"] === 0) availableDiffs.push(kenpomDiff / KENPOM_SCALE);
+      if (missingEvanMiya === 0) availableDiffs.push(featureMap["evanmiya_relative_rating_power_diff"] / EVANMIYA_SCALE);
       if (availableDiffs.length > 1) {
         const diffMean = availableDiffs.reduce((s, v) => s + v, 0) / availableDiffs.length;
         const diffVar = availableDiffs.reduce((s, v) => s + (v - diffMean) ** 2, 0) / availableDiffs.length;
@@ -1336,17 +1347,27 @@ export class PredictionService {
         featureMap["max_min_rating_spread"] = 0;
       }
 
+      // Elo features -- at runtime we don't have historical Elo ratings
+      // (those are computed from Kaggle game-by-game results during training).
+      // Mark as missing so the model falls back to other signals.
+      featureMap["elo_diff"] = 0;
+      featureMap["elo_rank_percentile_diff"] = 0;
+      featureMap["missing_elo"] = 1;
+
       featureMap["missing_resume_rank_blend"] = 0;
-      // NOTE: semantic divergence from Python training pipeline.
-      // Python computes this as the average of 7 resume rank percentile diffs.
-      // TS uses (resumeScore diff) / 100. The scaler normalizes both, but the
-      // optimized feature set excludes this field, so the mismatch does not affect promotion.
+      // Python computes this as the mean of 7 resume rank percentile diffs.
+      // At runtime we approximate from resumeScore (scale 15-99) mapped to
+      // a percentile diff. The optimized/enhanced feature sets exclude this
+      // field so the approximation does not affect the promoted artifact.
       featureMap["resume_rank_blend_percentile_diff"] = (snapshotA.resumeScore - snapshotB.resumeScore) / 100;
 
       featureMap["available_predictive_rank_count"] = 3 - (missingBpi + missingNet + missingMassey);
       featureMap["available_power_feature_count"] =
         3 - (featureMap["missing_kenpom_badj_em"] + missingEvanMiya + missingFiveThirtyEight);
-      featureMap["available_resume_feature_count"] = 1;
+      // Python computes this from 7 resume rank availability columns. At runtime
+      // we don't have those columns, so we use a reasonable estimate based on
+      // the available rating sources. The promoted feature set excludes this field.
+      featureMap["available_resume_feature_count"] = featureMap["available_predictive_rank_count"];
     }
 
     return featureMap;

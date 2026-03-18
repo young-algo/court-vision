@@ -28,11 +28,6 @@ ALIASES_PATH = PIPELINE_ROOT / "aliases" / "historical_aliases.csv"
 MODEL_ROOT = ROOT / "data" / "models"
 EXTERNAL_ROOT = DATA_ROOT / "external"
 KAGGLE_DEFAULT_ROOT = EXTERNAL_ROOT / "kaggle"
-KAGGLE_USER_FALLBACK_ROOT = Path("/Users/kevinturner/Downloads/march-machine-learning-mania-2026")
-ARCHIVE_DEFAULT_ROOT = Path("/Users/kevinturner/Downloads/archive")
-MASSEY_MASTER_DEFAULT_PATH = Path(
-    "/Users/kevinturner/Documents/Code/Personal/March Matchup — NCAA Tournament Predictor/massey_master.csv"
-)
 
 DEFAULT_HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; ncaa-predictor-historical-pipeline/1.0)",
@@ -126,15 +121,14 @@ def resolve_kaggle_root(explicit: str | None = None) -> Path | None:
         explicit,
         os.getenv("KAGGLE_MARCH_MADNESS_ROOT"),
         str(KAGGLE_DEFAULT_ROOT),
-        str(KAGGLE_USER_FALLBACK_ROOT),
     ]
 
     for candidate in candidates:
         if not candidate:
             continue
-        path = Path(candidate).expanduser().resolve()
-        if path.exists() and list(path.rglob("MTeams.csv")):
-            return path
+        resolved = Path(candidate).expanduser().resolve()
+        if resolved.exists() and list(resolved.rglob("MTeams.csv")):
+            return resolved
 
     return None
 
@@ -143,15 +137,14 @@ def resolve_archive_root(explicit: str | None = None) -> Path | None:
     candidates = [
         explicit,
         os.getenv("NCAA_ARCHIVE_ROOT"),
-        str(ARCHIVE_DEFAULT_ROOT),
     ]
 
     for candidate in candidates:
         if not candidate:
             continue
-        path = Path(candidate).expanduser().resolve()
-        if path.exists():
-            return path
+        resolved = Path(candidate).expanduser().resolve()
+        if resolved.exists():
+            return resolved
 
     return None
 
@@ -161,14 +154,13 @@ def resolve_massey_master_path(explicit: str | None = None) -> Path | None:
         explicit,
         os.getenv("MASSEY_MASTER_CSV"),
         str(EXTERNAL_ROOT / "massey_master.csv"),
-        str(MASSEY_MASTER_DEFAULT_PATH),
     ]
 
     for candidate in candidates:
         if not candidate:
             continue
-        path = Path(candidate).expanduser().resolve()
-        if path.exists():
-            return path
+        resolved = Path(candidate).expanduser().resolve()
+        if resolved.exists():
+            return resolved
 
     return None
