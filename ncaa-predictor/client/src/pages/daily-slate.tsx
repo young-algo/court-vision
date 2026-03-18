@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarDays, Flag, Gauge, Sparkles, Trophy } from "lucide-react";
+import { CalendarDays, Flag, Sparkles, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ModelStatusCard } from "@/components/model-status-card";
+import { OddsDisplay } from "@/components/odds-display";
 import { fetchGames } from "@/lib/api";
-import { formatPercent, formatSigned } from "@/lib/prediction-display";
+import { formatPercent, formatSigned, matchupInsight } from "@/lib/prediction-display";
 
 const DEFAULT_DATE = "2026-03-14";
 
@@ -111,33 +112,27 @@ export default function DailySlatePage() {
                   </div>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-border p-4">
-                    <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                      <Gauge className="h-3.5 w-3.5" />
-                      Favorite signal
-                    </div>
-                    <div className="mt-2 text-sm leading-6 text-muted-foreground">
-                      {favorite.shortName} leads the projection by{" "}
-                      <span className="font-semibold text-foreground">
-                        {formatSigned(game.prediction.expectedMargin)}
-                      </span>{" "}
-                      with a {formatPercent(Math.max(game.prediction.winProbabilityA, game.prediction.winProbabilityB))} win rate.
-                    </div>
+                <div className="rounded-2xl border border-border p-4">
+                  <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Insight
                   </div>
-                  <div className="rounded-2xl border border-border p-4">
-                    <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                      <Sparkles className="h-3.5 w-3.5" />
-                      Volatility note
-                    </div>
-                    <div className="mt-2 text-sm leading-6 text-muted-foreground">
-                      {underdog.shortName} still carries a non-trivial upset path because the uncertainty band spans{" "}
-                      {formatSigned(game.prediction.uncertaintyBand.low)} to{" "}
-                      {formatSigned(game.prediction.uncertaintyBand.high)}.
-                    </div>
+                  <div className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {matchupInsight(game)}
                   </div>
                 </div>
               </div>
+
+              {game.odds && (
+                <div className="mt-4">
+                  <OddsDisplay
+                    odds={game.odds}
+                    teamAName={game.teamA.shortName}
+                    teamBName={game.teamB.shortName}
+                    compact
+                  />
+                </div>
+              )}
 
               <div className="mt-5 grid gap-3 md:grid-cols-3">
                 {game.prediction.keyFactors.slice(0, 3).map((factor) => (

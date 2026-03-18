@@ -11,12 +11,6 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
-try:
-    from dotenv import load_dotenv as _load_dotenv
-    _load_dotenv(Path(__file__).resolve().parents[1] / ".env")
-except ImportError:
-    pass
-
 ROOT = Path(__file__).resolve().parents[1]
 PIPELINE_ROOT = ROOT / "historical_pipeline"
 DATA_ROOT = PIPELINE_ROOT / "data"
@@ -44,11 +38,6 @@ class SeasonConfig:
     training_seasons: list[int]
     snapshot_policy: str
     selection_sunday_dates: dict[str, str]
-
-
-def ODDS_API_KEY() -> str:
-    """Return the Odds API key from the environment."""
-    return os.getenv("ODDS_API_KEY", "")
 
 
 def ensure_dirs() -> None:

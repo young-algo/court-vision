@@ -1822,5 +1822,37 @@
     "bpi_def": 3.6,
     "bpi_rank": 92,
     "net_rank": null
+  },
+  {
+    "name": "Kennesaw St.",
+    "conference": "ASUN",
+    "record": "25-10",
+    "torvik_rank": 145,
+    "adjoe": 107.2,
+    "adjde": 105.8,
+    "adjEM": 1.4,
+    "barthag": 0.505,
+    "adjt": 68.1,
+    "bpi": null,
+    "bpi_off": null,
+    "bpi_def": null,
+    "bpi_rank": null,
+    "net_rank": 145
+  },
+  {
+    "name": "Lehigh",
+    "conference": "PAT",
+    "record": "22-13",
+    "torvik_rank": 190,
+    "adjoe": 101.5,
+    "adjde": 108.9,
+    "adjEM": -7.4,
+    "barthag": 0.305,
+    "adjt": 66.4,
+    "bpi": null,
+    "bpi_off": null,
+    "bpi_def": null,
+    "bpi_rank": null,
+    "net_rank": 190
   }
 ]

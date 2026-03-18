@@ -2,7 +2,7 @@
   "id": "tournament-consensus-candidate",
   "label": "Learned Tournament Consensus Candidate",
   "model_type": "learned_tournament_consensus",
-  "generated_at": "2026-03-16T03:59:01.292270+00:00",
+  "generated_at": "2026-03-17T02:08:34.374682+00:00",
   "snapshot_policy": "selection_sunday_latest_stable",
   "training_seasons": [
     2016,

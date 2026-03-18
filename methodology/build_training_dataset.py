@@ -367,7 +367,6 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--games", default=str(PROCESSED_ROOT / "tournament_games.parquet"))
     parser.add_argument("--snapshots", default=str(PROCESSED_ROOT / "season_snapshots.parquet"))
-    parser.add_argument("--odds", default=str(PROCESSED_ROOT / "tournament_odds.parquet"))
     parser.add_argument("--output", default=str(PROCESSED_ROOT / "tournament_training_games.parquet"))
     args = parser.parse_args()
 
@@ -413,21 +412,6 @@ def main() -> None:
             "No seasons cleared the minimum predictive-source coverage threshold."
         )
     features = features[features["season"].isin(modeled_seasons)].copy()
-
-    # --- Merge betting odds if available (Step 5) ---
-    odds_path = Path(args.odds)
-    if odds_path.exists():
-        from .collect_betting_odds import merge_odds_into_training
-        odds_df = pd.read_parquet(odds_path)
-        features = merge_odds_into_training(features, odds_df)
-        coverage = (features["missing_betting"] == 0).mean()
-        print(f"Betting odds merged: {coverage:.1%} coverage")
-    else:
-        features["betting_spread_a"] = None
-        features["betting_win_prob_a"] = None
-        features["betting_bookmaker_count"] = 0
-        features["missing_betting"] = 1
-        print("No tournament_odds.parquet found – betting signal will be missing (run historical:odds first)")
 
     output_path = Path(args.output)
     if output_path.suffix == ".parquet":

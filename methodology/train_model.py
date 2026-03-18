@@ -27,16 +27,6 @@ CORE_CANDIDATE_SIGNAL_FEATURES = [
     "fivethirtyeight_power_power_diff",
     "resume_rank_blend_percentile_diff",
 ]
-
-# Betting market features live outside the signal-missing machinery because
-# they use a different naming convention (betting_spread_a, not *_percentile_diff).
-# They are injected directly into ENHANCED_CANDIDATE_FEATURES and handled by
-# numeric_frame (which fills NaN → 0 and missing_ → 1 by default).
-BETTING_FEATURES = [
-    "betting_spread_a",
-    "betting_win_prob_a",
-    "missing_betting",
-]
 EXPERIMENTAL_MASSEY_MASTER_SIGNAL_FEATURES = [
     "massey_composite_rank_percentile_diff",
     "massey_mean_rank_percentile_diff",
@@ -110,9 +100,6 @@ OPTIMIZED_CANDIDATE_FEATURES = [
 ENHANCED_CANDIDATE_FEATURES = [
     *OPTIMIZED_CANDIDATE_FEATURES,
     *NEW_CONTEXT_FEATURES,
-    # BETTING_FEATURES intentionally excluded: coverage too sparse (<12% per training
-    # window in rolling backtest) causes sign inversion and degrades log-loss by ~0.004.
-    # Betting signal is surfaced live in the UI but not used in the learned artifact.
 ]
 ENHANCED_WIN_FEATURES = [
     feature for feature in ENHANCED_CANDIDATE_FEATURES if feature != "seed_diff"

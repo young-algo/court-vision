@@ -17,9 +17,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ModelStatusCard } from "@/components/model-status-card";
+import { OddsDisplay } from "@/components/odds-display";
 import { TeamSearchSelect } from "@/components/team-search-select";
 import { fetchMatchupPrediction, fetchTeams } from "@/lib/api";
-import { confidenceCopy, formatPercent, formatSigned } from "@/lib/prediction-display";
+import { matchupInsight, formatPercent, formatSigned } from "@/lib/prediction-display";
 import type { Team, Venue } from "@shared/schema";
 
 const DEFAULT_DATE = "2026-03-14";
@@ -304,10 +305,10 @@ export default function MatchupPredictor() {
                 <div className="grid gap-3 sm:grid-cols-3">
                   <div className="rounded-2xl bg-muted/45 p-4">
                     <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                      Expected margin
+                      Calibrated margin
                     </div>
                     <div className="mt-2 text-2xl font-semibold tabular-nums">
-                      {formatSigned(prediction.prediction.expectedMargin)}
+                      {prediction.prediction.impliedSpread.replace(/^[A-Za-z.']+\s*/, "")}
                     </div>
                   </div>
                   <div className="rounded-2xl bg-muted/45 p-4">
@@ -320,10 +321,10 @@ export default function MatchupPredictor() {
                   </div>
                   <div className="rounded-2xl bg-muted/45 p-4">
                     <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                      Model note
+                      Insight
                     </div>
                     <div className="mt-2 text-sm leading-5 text-muted-foreground">
-                      {confidenceCopy(prediction.prediction.confidenceTier)}
+                      {matchupInsight(prediction)}
                     </div>
                   </div>
                 </div>
@@ -461,6 +462,16 @@ export default function MatchupPredictor() {
                 })}
               </div>
             </Card>
+
+            {prediction.odds && (
+              <Card className="px-5 py-4">
+                <OddsDisplay
+                  odds={prediction.odds}
+                  teamAName={prediction.teamA.shortName}
+                  teamBName={prediction.teamB.shortName}
+                />
+              </Card>
+            )}
           </div>
         </div>
       ) : null}

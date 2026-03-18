@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-16T03:59:01.318364+00:00",
+  "generatedAt": "2026-03-17T02:08:34.422666+00:00",
   "datasetCoverage": {
     "rowCount": 1132,
     "seasonCount": 9,
@@ -301,17 +301,17 @@
     }
   },
   "aggregateWinners": {
-    "marginMae": "optimized_candidate_stack",
-    "brierScore": "reduced_candidate_stack",
     "logLoss": "gbm_distilled_candidate_stack",
     "calibrationError": "enhanced_candidate_stack",
+    "brierScore": "reduced_candidate_stack",
+    "marginMae": "optimized_candidate_stack",
     "upsetRecall": "best_single_source_net"
   },
   "pooledWinners": {
-    "marginMae": "optimized_candidate_stack",
-    "brierScore": "reduced_candidate_stack",
     "logLoss": "ensemble_blend",
     "calibrationError": "ensemble_blend",
+    "brierScore": "reduced_candidate_stack",
+    "marginMae": "optimized_candidate_stack",
     "upsetRecall": "best_single_source_net"
   },
   "backtestBySeason": [
@@ -2532,10 +2532,10 @@
         }
       },
       "winner": {
-        "marginMae": "best_single_source_net",
-        "brierScore": "best_single_source_net",
         "logLoss": "best_single_source_net",
         "calibrationError": "best_single_source_net",
+        "brierScore": "best_single_source_net",
+        "marginMae": "best_single_source_net",
         "upsetRecall": "best_single_source_net"
       }
     },
@@ -2647,10 +2647,10 @@
         }
       },
       "winner": {
-        "marginMae": "best_single_source_net",
-        "brierScore": "best_single_source_net",
         "logLoss": "best_single_source_net",
         "calibrationError": "best_single_source_net",
+        "brierScore": "best_single_source_net",
+        "marginMae": "best_single_source_net",
         "upsetRecall": "best_single_source_net"
       }
     },
@@ -2762,19 +2762,19 @@
         }
       },
       "winner": {
-        "marginMae": "optimized_candidate_stack",
-        "brierScore": "reduced_candidate_stack",
         "logLoss": "ensemble_blend",
         "calibrationError": "gbm_distilled_candidate_stack",
+        "brierScore": "reduced_candidate_stack",
+        "marginMae": "optimized_candidate_stack",
         "upsetRecall": "best_single_source_net"
       }
     }
   },
   "promotion": {
-    "requested": true,
+    "requested": false,
     "bestCandidate": "ensemble_blend",
     "eligibleByMetrics": true,
     "runtimeCompatible": true,
-    "latestArtifactUpdated": true
+    "latestArtifactUpdated": false
   }
 }

@@ -7,7 +7,6 @@ import {
   type FeatureAttribution,
   type Game,
   type GameProjection,
-  type MatchupOdds,
   type ModelRun,
   type Prediction,
   type PredictionComponent,
@@ -16,7 +15,6 @@ import {
   type TeamRatingSnapshot,
   type Venue,
 } from "@shared/schema";
-import type { OddsMap } from "./odds-service";
 import type { LearnedTournamentArtifact } from "./learned-tournament-artifact";
 
 const D1_AVG_EFFICIENCY = 100;
@@ -75,8 +73,6 @@ const SOURCE_KEYS: PredictionComponent["key"][] = [
   "bpi",
   "net",
   "resume_form",
-  // betting_market is excluded from latent PCA (requires live data);
-  // it is injected directly when odds are available.
 ];
 
 type LatentConsensusModel = {
@@ -306,7 +302,6 @@ export class PredictionService {
   private readonly snapshotsByTeamId = new Map<string, TeamRatingSnapshot>();
   private readonly latentConsensus: LatentConsensusModel;
   private readonly learnedArtifact: LearnedTournamentArtifact | null;
-  private oddsMap: OddsMap = new Map();
 
   constructor(
     private readonly teams: Team[],
@@ -320,55 +315,6 @@ export class PredictionService {
     );
     this.latentConsensus = this.buildLatentConsensusModel();
     this.learnedArtifact = learnedArtifact;
-  }
-
-  /** Inject live odds so prediction components can include the market signal. */
-  setOddsMap(map: OddsMap): void {
-    this.oddsMap = map;
-  }
-
-  /** Build name→id map for the odds service team matcher. */
-  getTeamNameMap(): Map<string, string> {
-    const map = new Map<string, string>();
-    for (const team of this.teams) {
-      map.set(team.id, team.name);
-    }
-    return map;
-  }
-
-  /** Resolve MatchupOdds for a pair of team IDs from current odds map. */
-  getMatchupOdds(teamAId: string, teamBId: string): MatchupOdds | null {
-    const key = [teamAId, teamBId].sort().join("::");
-    const odds = this.oddsMap.get(key);
-    if (!odds) return null;
-
-    // Determine orientation: is teamA the "home" side in the API event?
-    // For neutral-site tournament games this is arbitrary, but we track it.
-    // We do a name-slug comparison as a heuristic.
-    const teamA = this.teamsById.get(teamAId);
-    const teamAIsHome = teamA
-      ? odds.homeTeam.toLowerCase().includes(teamA.name.split(" ")[0]?.toLowerCase() ?? "")
-      : false;
-
-    const impliedProbA = odds.impliedProbHome !== null
-      ? teamAIsHome ? odds.impliedProbHome : 1 - odds.impliedProbHome
-      : null;
-    const spreadA = odds.consensusSpreadHome !== null
-      ? teamAIsHome ? odds.consensusSpreadHome : -odds.consensusSpreadHome
-      : null;
-    const moneylineA = teamAIsHome ? odds.bestMoneylineHome : odds.bestMoneylineAway;
-    const moneylineB = teamAIsHome ? odds.bestMoneylineAway : odds.bestMoneylineHome;
-
-    return {
-      homeTeamId: teamAIsHome ? teamAId : teamBId,
-      awayTeamId: teamAIsHome ? teamBId : teamAId,
-      impliedProbA,
-      spreadA,
-      moneylineA: moneylineA ?? null,
-      moneylineB: moneylineB ?? null,
-      bookmakerCount: odds.bookmakerCount,
-      commenceTime: odds.commenceTime,
-    };
   }
 
   getTeam(teamId: string) {
@@ -406,7 +352,6 @@ export class PredictionService {
       teamASnapshot: matchup.snapshotA,
       teamBSnapshot: matchup.snapshotB,
       prediction: matchup.prediction,
-      odds: matchup.odds,
     };
   }
 
@@ -424,16 +369,12 @@ export class PredictionService {
     const snapshotB = this.requireSnapshot(teamBId);
     const phase = seasonPhase(teamA, teamB);
 
-    // Resolve live odds for this matchup
-    const matchupOdds = this.getMatchupOdds(teamAId, teamBId);
-
     const components = this.buildConsensusComponents(
       teamA,
       teamB,
       snapshotA,
       snapshotB,
       venue,
-      matchupOdds,
     );
     const totalWeight = components.reduce(
       (sum, component) => sum + component.baseWeight * component.reliability,
@@ -570,7 +511,6 @@ export class PredictionService {
       snapshotB,
       prediction,
       modelRun: this.modelRun,
-      odds: matchupOdds,
     };
   }
 
@@ -746,7 +686,6 @@ export class PredictionService {
     snapshotA: TeamRatingSnapshot,
     snapshotB: TeamRatingSnapshot,
     venue: Venue,
-    matchupOdds: MatchupOdds | null = null,
   ): InternalOpinion[] {
     const learnedWeights = this.learnedArtifact?.source_weights;
     const torvikEfficiency = this.torvikEfficiencyComponent(snapshotA, snapshotB, venue);
@@ -755,7 +694,7 @@ export class PredictionService {
     const net = this.netComponent(snapshotA, snapshotB, venue);
     const resumeForm = this.resumeFormComponent(snapshotA, snapshotB, venue);
 
-    const components: InternalOpinion[] = [
+    return [
       {
         key: "torvik_efficiency",
         name: "Torvik efficiency model",
@@ -817,36 +756,6 @@ export class PredictionService {
         ...resumeForm,
       },
     ];
-
-    // Betting market is intentionally excluded from the weighted consensus ensemble.
-    // Coverage was too sparse in historical training (<12% per window) causing sign
-    // inversion that degraded log-loss. It is surfaced in the UI as reference-only
-    // via the separate `odds` field on the prediction response.
-    // When coverage is sufficient (Option 2/3), re-enable here.
-
-    return components;
-  }
-
-  private bettingMarketComponent(
-    odds: MatchupOdds,
-    venue: Venue,
-  ): { expectedMargin: number; winProbabilityA: number } {
-    // If we have a direct spread, use it as the expected margin
-    if (odds.spreadA !== null) {
-      const expectedMargin = -odds.spreadA + homeCourtAdjustment(venue) * 0.1;
-      return {
-        expectedMargin,
-        winProbabilityA: clamp(1 - normalCdf(0, expectedMargin, SIGMA), 0.01, 0.99),
-      };
-    }
-
-    // Fall back to implied probability → margin via inverse normal
-    const prob = clamp(odds.impliedProbA ?? 0.5, 0.01, 0.99);
-    const expectedMargin = probabilityToMargin(prob) + homeCourtAdjustment(venue) * 0.1;
-    return {
-      expectedMargin,
-      winProbabilityA: clamp(prob, 0.01, 0.99),
-    };
   }
 
   private simulateRegion(

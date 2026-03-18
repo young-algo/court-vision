@@ -235,23 +235,98 @@ function createSnapshot(team: Team, raw: RawTeamRow): TeamRatingSnapshot {
   };
 }
 
+/**
+ * 2026 NCAA Tournament bracket — actual Selection Sunday seedings.
+ * First Four winners:
+ *   11-West:    NC State over Texas  (West, seed 11)
+ *   11-Midwest: SMU over Miami OH    (Midwest, seed 11)
+ *   16-South:   Howard over UMBC     (South, seed 16)
+ *   16-Midwest: Lehigh over Prairie View (Midwest, seed 16)
+ */
+const ACTUAL_2026_BRACKET: Array<{ teamId: string; region: BracketRegion; seed: number }> = [
+  // EAST
+  { teamId: "duke",           region: "East", seed: 1  },
+  { teamId: "siena",          region: "East", seed: 16 },
+  { teamId: "ohio-st",        region: "East", seed: 8  },
+  { teamId: "tcu",            region: "East", seed: 9  },
+  { teamId: "st-johns",       region: "East", seed: 5  },
+  { teamId: "northern-iowa",  region: "East", seed: 12 },
+  { teamId: "kansas",         region: "East", seed: 4  },
+  { teamId: "cal-baptist",    region: "East", seed: 13 },
+  { teamId: "louisville",     region: "East", seed: 6  },
+  { teamId: "south-florida",  region: "East", seed: 11 },
+  { teamId: "michigan-st",    region: "East", seed: 3  },
+  { teamId: "north-dakota-st",region: "East", seed: 14 },
+  { teamId: "ucla",           region: "East", seed: 7  },
+  { teamId: "ucf",            region: "East", seed: 10 },
+  { teamId: "uconn",          region: "East", seed: 2  },
+  { teamId: "furman",         region: "East", seed: 15 },
+
+  // WEST
+  { teamId: "arizona",        region: "West", seed: 1  },
+  { teamId: "long-island",    region: "West", seed: 16 },
+  { teamId: "villanova",      region: "West", seed: 8  },
+  { teamId: "utah-st",        region: "West", seed: 9  },
+  { teamId: "wisconsin",      region: "West", seed: 5  },
+  { teamId: "high-point",     region: "West", seed: 12 },
+  { teamId: "arkansas",       region: "West", seed: 4  },
+  { teamId: "hawaii",         region: "West", seed: 13 },
+  { teamId: "byu",            region: "West", seed: 6  },
+  { teamId: "nc-state",       region: "West", seed: 11 }, // First Four winner
+  { teamId: "gonzaga",        region: "West", seed: 3  },
+  { teamId: "kennesaw-st",    region: "West", seed: 14 }, // slugify("Kennesaw St.")
+  { teamId: "miami-fl",       region: "West", seed: 7  },
+  { teamId: "missouri",       region: "West", seed: 10 },
+  { teamId: "purdue",         region: "West", seed: 2  },
+  { teamId: "queens-nc",      region: "West", seed: 15 },
+
+  // SOUTH
+  { teamId: "florida",        region: "South", seed: 1  },
+  { teamId: "umbc",           region: "South", seed: 16 }, // First Four winner (Howard/UMBC)
+  { teamId: "clemson",        region: "South", seed: 8  },
+  { teamId: "iowa",           region: "South", seed: 9  },
+  { teamId: "vanderbilt",     region: "South", seed: 5  },
+  { teamId: "mcneese",        region: "South", seed: 12 },
+  { teamId: "nebraska",       region: "South", seed: 4  },
+  { teamId: "troy",           region: "South", seed: 13 },
+  { teamId: "north-carolina", region: "South", seed: 6  },
+  { teamId: "vcu",            region: "South", seed: 11 },
+  { teamId: "illinois",       region: "South", seed: 3  },
+  { teamId: "penn",           region: "South", seed: 14 },
+  { teamId: "saint-marys",    region: "South", seed: 7  },
+  { teamId: "texas-aandm",    region: "South", seed: 10 },
+  { teamId: "houston",        region: "South", seed: 2  },
+  { teamId: "idaho",          region: "South", seed: 15 },
+
+  // MIDWEST
+  { teamId: "michigan",       region: "Midwest", seed: 1  },
+  { teamId: "lehigh",         region: "Midwest", seed: 16 }, // First Four winner
+  { teamId: "georgia",        region: "Midwest", seed: 8  },
+  { teamId: "saint-louis",    region: "Midwest", seed: 9  },
+  { teamId: "texas-tech",     region: "Midwest", seed: 5  },
+  { teamId: "akron",          region: "Midwest", seed: 12 },
+  { teamId: "alabama",        region: "Midwest", seed: 4  },
+  { teamId: "hofstra",        region: "Midwest", seed: 13 },
+  { teamId: "tennessee",      region: "Midwest", seed: 6  },
+  { teamId: "smu",            region: "Midwest", seed: 11 }, // First Four winner
+  { teamId: "virginia",       region: "Midwest", seed: 3  },
+  { teamId: "wright-st",      region: "Midwest", seed: 14 },
+  { teamId: "kentucky",       region: "Midwest", seed: 7  },
+  { teamId: "santa-clara",    region: "Midwest", seed: 10 },
+  { teamId: "iowa-st",        region: "Midwest", seed: 2  },
+  { teamId: "tennessee-st",   region: "Midwest", seed: 15 },
+];
+
 function buildBracketField(teams: Team[]): BracketEntry[] {
-  const top64 = teams.slice(0, 64);
+  const teamById = new Map(teams.map((t) => [t.id, t]));
   const field: BracketEntry[] = [];
 
-  for (let seed = 1; seed <= 16; seed += 1) {
-    const start = (seed - 1) * 4;
-    const seedLine = top64.slice(start, start + 4);
-    const regions =
-      seed % 2 === 1 ? [...BRACKET_REGIONS] : [...BRACKET_REGIONS].reverse();
-
-    seedLine.forEach((team, index) => {
-      field.push({
-        teamId: team.id,
-        region: regions[index] as BracketRegion,
-        seed,
-      });
-    });
+  for (const entry of ACTUAL_2026_BRACKET) {
+    if (teamById.has(entry.teamId)) {
+      field.push(entry);
+    } else {
+      console.warn(`[bracket] team not found in seed data: ${entry.teamId} — skipping`);
+    }
   }
 
   return field;

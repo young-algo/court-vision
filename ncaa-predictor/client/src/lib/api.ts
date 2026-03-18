@@ -8,6 +8,30 @@ import type {
 } from "@shared/schema";
 import { apiRequest } from "./queryClient";
 
+export interface EnrichedOdds {
+  eventId: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeTeamId: string | null;
+  awayTeamId: string | null;
+  commenceTime: string;
+  impliedProbHome: number | null;
+  consensusSpreadHome: number | null;
+  bestMoneylineHome: number | null;
+  bestMoneylineAway: number | null;
+  moneylineHomeDisplay: string;
+  moneylineAwayDisplay: string;
+  spreadDisplay: string;
+  bookmakerCount: number;
+  fetchedAt: string;
+}
+
+export interface OddsResponse {
+  odds: EnrichedOdds[];
+  count: number;
+  fetchedAt: string;
+}
+
 async function readJson<T>(response: Response): Promise<T> {
   return (await response.json()) as T;
 }
@@ -49,4 +73,9 @@ export async function fetchBracketSimulation(simulations = 4000, seed = 2026) {
 export async function fetchLatestModelRun() {
   const response = await apiRequest("GET", "/api/model-runs/latest");
   return readJson<ModelRunResponse>(response);
+}
+
+export async function fetchOdds() {
+  const response = await apiRequest("GET", "/api/odds");
+  return readJson<OddsResponse>(response);
 }

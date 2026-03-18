@@ -11,6 +11,7 @@
     "test": "node --import tsx --test server/**/*.test.ts",
     "historical:games": "python3 -m historical_pipeline.collect_tournament_games",
     "historical:snapshots": "python3 -m historical_pipeline.collect_snapshots",
+    "historical:odds": "python3 -m historical_pipeline.collect_betting_odds",
     "historical:dataset": "python3 -m historical_pipeline.build_training_dataset",
     "historical:train": "python3 -m historical_pipeline.train_model",
     "db:push": "drizzle-kit push"
@@ -51,6 +52,7 @@
     "cmdk": "^1.1.1",
     "connect-pg-simple": "^10.0.0",
     "date-fns": "^3.6.0",
+    "dotenv": "^17.3.1",
     "drizzle-orm": "^0.39.3",
     "drizzle-zod": "^0.7.0",
     "embla-carousel-react": "^8.6.0",

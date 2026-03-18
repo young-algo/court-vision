@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "id": "52c7d825",
+    "label": "dev-server-odds",
+    "command": "cd /Users/kevinturner/Documents/Code/Personal/ncaa-predictor-complete/ncaa-predictor && npm run dev",
+    "cwd": "/Users/kevinturner/Documents/Code/Personal/ncaa-predictor-complete/ncaa-predictor",
+    "startedAt": 1773713487302,
+    "processType": "server",
+    "group": null,
+    "readyPattern": null,
+    "readyPort": 5100,
+    "pid": 39695
+  }
+]

@@ -96,8 +96,7 @@ export type PredictionComponentKey =
   | "torvik_barthag"
   | "bpi"
   | "net"
-  | "resume_form"
-  | "betting_market";
+  | "resume_form";
 
 export type PredictionComponentFamily =
   | "public_rating"
@@ -162,7 +161,6 @@ export interface GameProjection extends Game {
   teamASnapshot: TeamRatingSnapshot;
   teamBSnapshot: TeamRatingSnapshot;
   prediction: Prediction;
-  odds: MatchupOdds | null;
 }
 
 export interface ModelRunMetrics {
@@ -199,42 +197,6 @@ export interface ModelRun {
   metrics: ModelRunMetrics;
 }
 
-// ---------------------------------------------------------------------------
-// Betting odds
-// ---------------------------------------------------------------------------
-
-export interface GameOdds {
-  /** Odds API event id */
-  eventId: string;
-  homeTeam: string;
-  awayTeam: string;
-  commenceTime: string;
-  /** Vig-removed implied win prob for home team (0–1). null if unavailable. */
-  impliedProbHome: number | null;
-  /** Consensus spread from home-team perspective. Negative = home favored. */
-  consensusSpreadHome: number | null;
-  /** Best moneyline (American) for home team */
-  bestMoneylineHome: number | null;
-  /** Best moneyline (American) for away team */
-  bestMoneylineAway: number | null;
-  bookmakerCount: number;
-  fetchedAt: string;
-}
-
-export interface MatchupOdds {
-  /** Canonical team ID for the team listed as "home" in the odds event */
-  homeTeamId: string | null;
-  /** Canonical team ID for the team listed as "away" in the odds event */
-  awayTeamId: string | null;
-  /** Odds oriented for team A (may be flipped vs. the raw API home/away) */
-  impliedProbA: number | null;
-  spreadA: number | null;            // negative = team A favored
-  moneylineA: number | null;         // American
-  moneylineB: number | null;
-  bookmakerCount: number;
-  commenceTime: string | null;
-}
-
 export interface MatchupPredictionResponse {
   teamA: Team;
   teamB: Team;
@@ -242,7 +204,6 @@ export interface MatchupPredictionResponse {
   snapshotB: TeamRatingSnapshot;
   prediction: Prediction;
   modelRun: ModelRun;
-  odds: MatchupOdds | null;
 }
 
 export interface TeamsResponse {

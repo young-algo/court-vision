@@ -8,6 +8,14 @@ import {
   teamsQuerySchema,
 } from "@shared/schema";
 import { storage } from "./storage";
+import {
+  buildOddsMap,
+  formatMoneyline,
+  formatSpreadDisplay,
+  getLiveOdds,
+  matchTeam,
+  type ConsensusOdds,
+} from "./services/odds-service";
 
 function handleRouteError(error: unknown, next: NextFunction) {
   if (error instanceof ZodError) {
@@ -20,10 +28,28 @@ function handleRouteError(error: unknown, next: NextFunction) {
   next(error);
 }
 
+/** Refresh the live odds map on the prediction service (best-effort). */
+async function refreshOdds(): Promise<void> {
+  try {
+    const predictionService = storage.getPredictionService();
+    const teamMap = predictionService.getTeamNameMap();
+    const liveOdds = await getLiveOdds();
+    const oddsMap = buildOddsMap(liveOdds, teamMap);
+    predictionService.setOddsMap(oddsMap);
+    console.log(`[odds] refreshed: ${oddsMap.size} matched games from ${liveOdds.length} live events`);
+  } catch (err) {
+    console.warn("[odds] refresh failed (non-fatal):", err instanceof Error ? err.message : String(err));
+  }
+}
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express,
 ): Promise<Server> {
+  // Warm up odds on startup and refresh every 12 hours
+  void refreshOdds();
+  setInterval(() => void refreshOdds(), 12 * 60 * 60 * 1000);
+
   app.get("/api/teams", async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { season } = teamsQuerySchema.parse(req.query);
@@ -90,6 +116,36 @@ export async function registerRoutes(
     res.json({
       modelRun: storage.getPredictionService().getModelRun(),
     });
+  });
+
+  /**
+   * GET /api/odds
+   * Returns live NCAAB odds from the-odds-api, enriched with our canonical
+   * team IDs where matchable. Cached for 5 minutes server-side.
+   */
+  app.get("/api/odds", async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+      const predictionService = storage.getPredictionService();
+      const teamMap = predictionService.getTeamNameMap();
+      const liveOdds = await getLiveOdds();
+
+      const enriched = liveOdds.map((odds: ConsensusOdds) => {
+        const homeTeamId = matchTeam(odds.homeTeam, teamMap);
+        const awayTeamId = matchTeam(odds.awayTeam, teamMap);
+        return {
+          ...odds,
+          homeTeamId,
+          awayTeamId,
+          moneylineHomeDisplay: formatMoneyline(odds.bestMoneylineHome),
+          moneylineAwayDisplay: formatMoneyline(odds.bestMoneylineAway),
+          spreadDisplay: formatSpreadDisplay(odds.consensusSpreadHome),
+        };
+      });
+
+      res.json({ odds: enriched, count: enriched.length, fetchedAt: new Date().toISOString() });
+    } catch (error) {
+      next(error);
+    }
   });
 
   return httpServer;
