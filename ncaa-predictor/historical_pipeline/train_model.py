@@ -160,6 +160,87 @@ DISTILLATION_BLEND = 0.7
 TEMPORAL_DECAY = 0.90
 
 
+def tune_hyperparameters(
+    frame: pd.DataFrame,
+    feature_frame_fn,
+    win_feature_names: list[str] | None = None,
+    n_trials: int = 40,
+) -> dict[str, object]:
+    """Use optuna to tune GBM distillation params via inner 3-fold CV on the training set."""
+    try:
+        import optuna
+    except ImportError:
+        print("optuna not installed -- skipping hyperparameter tuning, using defaults")
+        return {
+            "gbm_params": GBM_DISTILLATION_PARAMS,
+            "distillation_blend": DISTILLATION_BLEND,
+            "temporal_decay": TEMPORAL_DECAY,
+        }
+
+    optuna.logging.set_verbosity(optuna.logging.WARNING)
+    seasons = sorted(frame["season"].dropna().astype(int).unique())
+    n_inner = min(3, len(seasons) - 1)
+    inner_pairs = rolling_pairs(seasons)[-n_inner:]
+
+    def objective(trial: optuna.Trial) -> float:
+        n_est = trial.suggest_int("n_estimators", 40, 200, step=20)
+        max_depth = trial.suggest_int("max_depth", 2, 5)
+        lr = trial.suggest_float("learning_rate", 0.01, 0.15, log=True)
+        blend = trial.suggest_float("distillation_blend", 0.4, 0.9)
+        decay = trial.suggest_float("temporal_decay", 0.80, 0.98)
+
+        gbm_params = {"n_estimators": n_est, "max_depth": max_depth, "learning_rate": lr, "random_state": 42}
+        losses = []
+        for train_seasons, holdout_season in inner_pairs:
+            train = frame[frame["season"].isin(train_seasons)].copy()
+            holdout = frame[frame["season"] == holdout_season].copy()
+            if train.empty or holdout.empty:
+                continue
+
+            train_features = feature_frame_fn(train)
+            holdout_features = feature_frame_fn(holdout)
+            temporal = compute_temporal_weights(train["season"], decay)
+            upset_mask = (train["seed_diff"] > 0) & (train["team_win"] == 1)
+            weights = temporal * np.where(upset_mask, 1.5, 1.0)
+
+            feature_names = list(train_features.columns)
+            wfn = win_feature_names or feature_names
+            scaler = StandardScaler()
+            scaled_train = scaler.fit_transform(train_features)
+            scaled_holdout = scaler.transform(holdout_features[feature_names])
+            fi = {f: i for i, f in enumerate(feature_names)}
+            wi = [fi[f] for f in wfn]
+
+            win_teacher = GradientBoostingClassifier(**gbm_params)
+            win_teacher.fit(scaled_train[:, wi], train["team_win"], sample_weight=weights)
+            tp = np.clip(win_teacher.predict_proba(scaled_train[:, wi])[:, 1], 0.01, 0.99)
+            ep = np.clip(train["team_win"].to_numpy() * 0.98 + 0.01, 0.01, 0.99)
+            target = probability_to_logit(np.clip(blend * tp + (1 - blend) * ep, 0.01, 0.99))
+            student = RidgeCV(alphas=[1.0, 10.0, 100.0, 500.0, 1000.0]).fit(
+                scaled_train[:, wi], target, sample_weight=weights,
+            )
+            raw_prob = sigmoid(student.predict(scaled_holdout[:, wi]))
+            clipped = np.clip(raw_prob, 0.01, 0.99)
+            losses.append(float(log_loss(holdout["team_win"], clipped, labels=[0, 1])))
+
+        return float(np.mean(losses)) if losses else 1.0
+
+    study = optuna.create_study(direction="minimize")
+    study.optimize(objective, n_trials=n_trials, show_progress_bar=False)
+    best = study.best_params
+    print(f"Tuned hyperparameters: {best} (logLoss={study.best_value:.4f})")
+    return {
+        "gbm_params": {
+            "n_estimators": best["n_estimators"],
+            "max_depth": best["max_depth"],
+            "learning_rate": best["learning_rate"],
+            "random_state": 42,
+        },
+        "distillation_blend": best["distillation_blend"],
+        "temporal_decay": best["temporal_decay"],
+    }
+
+
 @dataclass
 class ModelBundle:
     feature_names: list[str]
@@ -245,7 +326,34 @@ def probability_to_logit(probabilities: np.ndarray) -> np.ndarray:
     return np.log(clipped / (1 - clipped))
 
 
-def fit_probability_calibrator(raw_probability: np.ndarray, y_true: pd.Series | np.ndarray) -> IsotonicRegression:
+def fit_probability_calibrator(
+    raw_probability: np.ndarray,
+    y_true: pd.Series | np.ndarray,
+    method: str = "isotonic",
+) -> IsotonicRegression | LogisticRegression:
+    """Fit a calibration mapping from raw probabilities to calibrated probabilities.
+
+    Methods:
+      - "isotonic": Isotonic regression with diagonal anchoring (default, current behavior)
+      - "platt": 2-parameter logistic (Platt scaling) -- lower variance, good for small data
+      - "beta": 3-parameter Beta calibration via logistic on log-odds + log(1-p) features
+    """
+    if method == "platt":
+        logits = probability_to_logit(np.clip(np.asarray(raw_probability), 0.01, 0.99))
+        platt = LogisticRegression(max_iter=2000, C=1e6)
+        platt.fit(logits.reshape(-1, 1), np.asarray(y_true, dtype=int))
+        return platt
+
+    if method == "beta":
+        raw = np.clip(np.asarray(raw_probability), 0.01, 0.99)
+        log_odds = np.log(raw / (1 - raw))
+        log_one_minus = np.log(1 - raw)
+        beta_features = np.column_stack([log_odds, log_one_minus])
+        beta_model = LogisticRegression(max_iter=2000, C=1e6)
+        beta_model.fit(beta_features, np.asarray(y_true, dtype=int))
+        return beta_model
+
+    # Default: isotonic with diagonal anchoring
     iso = IsotonicRegression(out_of_bounds="clip", y_min=0.02, y_max=0.98)
     diagonal_raw = np.arange(0.1, 1.0, 0.1)
     diagonal_true = diagonal_raw.copy()
@@ -258,6 +366,23 @@ def fit_probability_calibrator(raw_probability: np.ndarray, y_true: pd.Series | 
     ])
     iso.fit(anchored_raw_probability, anchored_y_true, sample_weight=weights)
     return iso
+
+
+def apply_calibrator(
+    calibrator: IsotonicRegression | LogisticRegression,
+    raw_probability: np.ndarray,
+) -> np.ndarray:
+    """Apply a fitted calibrator to raw probabilities."""
+    raw = np.clip(raw_probability, 0.01, 0.99)
+    if isinstance(calibrator, IsotonicRegression):
+        return np.clip(calibrator.predict(raw), 0.01, 0.99)
+    if hasattr(calibrator, "coef_") and calibrator.coef_.shape[1] == 2:
+        log_odds = np.log(raw / (1 - raw))
+        log_one_minus = np.log(1 - raw)
+        features = np.column_stack([log_odds, log_one_minus])
+        return np.clip(calibrator.predict_proba(features)[:, 1], 0.01, 0.99)
+    logits = probability_to_logit(raw)
+    return np.clip(calibrator.predict_proba(logits.reshape(-1, 1))[:, 1], 0.01, 0.99)
 
 
 def fit_model_bundle(
@@ -610,6 +735,50 @@ def fit_and_predict_distilled(
     return metrics, predictions
 
 
+def fit_and_predict_direct_gbm(
+    model_name: str,
+    train_features: pd.DataFrame,
+    holdout_features: pd.DataFrame,
+    train: pd.DataFrame,
+    holdout: pd.DataFrame,
+    baseline_detail: str | None = None,
+    win_feature_names: list[str] | None = None,
+) -> tuple[dict[str, float], pd.DataFrame]:
+    """Train a GBM directly (no distillation) and predict on holdout."""
+    temporal_weights = compute_training_weights(train)
+    feature_names = list(train_features.columns)
+    wfn = win_feature_names or feature_names
+    scaler = StandardScaler()
+    scaled_train = scaler.fit_transform(train_features)
+    scaled_holdout = scaler.transform(holdout_features[feature_names])
+    fi = {f: i for i, f in enumerate(feature_names)}
+    wi = [fi[f] for f in wfn]
+
+    margin_gbm = GradientBoostingRegressor(**GBM_DISTILLATION_PARAMS)
+    margin_gbm.fit(scaled_train, train["margin"], sample_weight=temporal_weights)
+    predicted_margin = margin_gbm.predict(scaled_holdout)
+
+    win_gbm = GradientBoostingClassifier(**GBM_DISTILLATION_PARAMS)
+    win_gbm.fit(scaled_train[:, wi], train["team_win"], sample_weight=temporal_weights)
+    raw_probability = np.clip(win_gbm.predict_proba(scaled_holdout[:, wi])[:, 1], 0.01, 0.99)
+
+    iso = fit_probability_calibrator(
+        np.clip(win_gbm.predict_proba(scaled_train[:, wi])[:, 1], 0.01, 0.99),
+        train["team_win"],
+    )
+    calibrated = apply_calibrator(iso, raw_probability)
+
+    metrics = metrics_for_predictions(holdout, calibrated, raw_probability, predicted_margin)
+    metrics["holdoutSeason"] = int(holdout["season"].iloc[0])
+    metrics["model"] = model_name
+    if baseline_detail:
+        metrics["baselineDetail"] = baseline_detail
+    predictions = model_prediction_frame(
+        holdout, model_name, predicted_margin, raw_probability, calibrated, baseline_detail,
+    )
+    return metrics, predictions
+
+
 def metric_winners(metrics_by_model: dict[str, dict[str, float]]) -> dict[str, str]:
     winners: dict[str, str] = {}
     for metric in [*LOWER_IS_BETTER, *HIGHER_IS_BETTER]:
@@ -867,6 +1036,27 @@ def seed_gap_calibration_anchor_rows(
     ]
 
 
+def _build_reference_features(
+    frame: pd.DataFrame,
+    bundle: ModelBundle,
+    sample_count: int = 5,
+) -> list[dict[str, object]]:
+    """Export a small set of feature vectors from the training data for parity testing."""
+    sample = frame.head(min(sample_count, len(frame))).copy()
+    feature_frame = numeric_frame(sample, bundle.feature_names)[bundle.feature_names]
+    rows: list[dict[str, object]] = []
+    for idx in range(len(feature_frame)):
+        row_features = {
+            feature: float(feature_frame.iloc[idx][feature])
+            for feature in bundle.feature_names
+        }
+        row_features["_seed_diff"] = float(sample.iloc[idx].get("seed_diff", 0))
+        row_features["_margin"] = float(sample.iloc[idx].get("margin", 0))
+        row_features["_team_win"] = int(sample.iloc[idx].get("team_win", 0))
+        rows.append(row_features)
+    return rows
+
+
 def candidate_artifact(
     bundle: ModelBundle,
     frame: pd.DataFrame,
@@ -940,6 +1130,7 @@ def candidate_artifact(
         "notes": "Training-only candidate artifact built from source-native feature semantics. Not promoted by default.",
         "runtimeCompatible": False,
         "featureSemantics": feature_semantics(),
+        "referenceFeatures": _build_reference_features(frame, bundle),
     }
 
 
@@ -1017,6 +1208,17 @@ def rolling_backtest(frame: pd.DataFrame) -> tuple[list[dict[str, object]], dict
         )
         metrics_rows.append(enhanced_metrics)
         predictions.setdefault("enhanced_candidate_stack", []).append(enhanced_predictions)
+
+        direct_gbm_metrics, direct_gbm_predictions = fit_and_predict_direct_gbm(
+            "direct_gbm",
+            enhanced_candidate_feature_frame(train),
+            enhanced_candidate_feature_frame(holdout),
+            train,
+            holdout,
+            win_feature_names=ENHANCED_WIN_FEATURES,
+        )
+        metrics_rows.append(direct_gbm_metrics)
+        predictions.setdefault("direct_gbm", []).append(direct_gbm_predictions)
 
         experimental_metrics, experimental_predictions = fit_and_predict(
             "candidate_stack_with_massey_master",
@@ -1121,56 +1323,64 @@ def aggregate_metrics(backtest_rows: pd.DataFrame) -> dict[str, dict[str, float]
     return aggregates
 
 
-ENSEMBLE_MEMBERS = ("enhanced_candidate_stack", "gbm_distilled_candidate_stack")
+ENSEMBLE_MEMBERS = ("enhanced_candidate_stack", "gbm_distilled_candidate_stack", "direct_gbm")
 
 
 def blend_candidate_predictions(
     predictions_by_model: dict[str, pd.DataFrame],
     member_names: tuple[str, ...] = ENSEMBLE_MEMBERS,
 ) -> pd.DataFrame | None:
-    """Blend probability predictions from multiple candidates using inverse-logLoss weights.
+    """Blend probability predictions using per-season inverse-logLoss weights.
 
-    Returns a merged predictions DataFrame with blended probability/raw_probability columns,
-    or None if fewer than 2 members are available.
+    For each holdout season, blend weights are computed from all OTHER seasons'
+    OOS predictions, preventing the blend from being "optimized" on its own
+    evaluation data.
     """
     available = [name for name in member_names if name in predictions_by_model]
     if len(available) < 2:
         return None
 
     member_frames = [predictions_by_model[name] for name in available]
-    # Each frame is aligned by position (same rolling pairs, same order)
     base = member_frames[0][["season", "team_win", "margin", "seed_diff", "predicted_margin"]].copy()
+    seasons = sorted(base["season"].unique())
 
-    # Compute per-member pooled logLoss; use inverse as blend weight
-    per_member_loss = []
-    for frame in member_frames:
-        clipped = np.clip(frame["probability"].to_numpy(), 0.01, 0.99)
-        loss = float(log_loss(frame["team_win"], clipped, labels=[0, 1]))
-        per_member_loss.append(loss)
+    blended_prob = np.zeros(len(base))
+    blended_raw = np.zeros(len(base))
+    blended_margin = np.zeros(len(base))
+    weight_details: list[str] = []
 
-    inverse_losses = [1.0 / loss for loss in per_member_loss]
-    total = sum(inverse_losses)
-    weights = [inv / total for inv in inverse_losses]
+    for holdout_season in seasons:
+        holdout_mask = base["season"] == holdout_season
+        train_mask = ~holdout_mask
 
-    blended_prob = sum(
-        w * np.clip(frame["probability"].to_numpy(), 0.01, 0.99)
-        for w, frame in zip(weights, member_frames)
-    )
-    blended_raw = sum(
-        w * np.clip(frame["raw_probability"].to_numpy(), 0.01, 0.99)
-        for w, frame in zip(weights, member_frames)
-    )
-    # Blended margin: weight by same inverse-logLoss
-    blended_margin = sum(
-        w * frame["predicted_margin"].to_numpy()
-        for w, frame in zip(weights, member_frames)
-    )
+        # Compute blend weights from non-holdout seasons
+        per_member_loss = []
+        for frame in member_frames:
+            train_probs = np.clip(frame.loc[train_mask, "probability"].to_numpy(), 0.01, 0.99)
+            train_wins = frame.loc[train_mask, "team_win"].to_numpy()
+            if len(train_probs) == 0:
+                per_member_loss.append(1.0)
+            else:
+                per_member_loss.append(float(log_loss(train_wins, train_probs, labels=[0, 1])))
+
+        inverse_losses = [1.0 / loss for loss in per_member_loss]
+        total = sum(inverse_losses)
+        weights = [inv / total for inv in inverse_losses]
+
+        for i, frame in enumerate(member_frames):
+            blended_prob[holdout_mask] += weights[i] * np.clip(
+                frame.loc[holdout_mask, "probability"].to_numpy(), 0.01, 0.99
+            )
+            blended_raw[holdout_mask] += weights[i] * np.clip(
+                frame.loc[holdout_mask, "raw_probability"].to_numpy(), 0.01, 0.99
+            )
+            blended_margin[holdout_mask] += weights[i] * frame.loc[holdout_mask, "predicted_margin"].to_numpy()
 
     base["probability"] = np.clip(blended_prob, 0.01, 0.99)
     base["raw_probability"] = np.clip(blended_raw, 0.01, 0.99)
     base["predicted_margin"] = blended_margin
     base["model"] = "ensemble_blend"
-    base["baselineDetail"] = f"blend:{','.join(f'{n}@{w:.2f}' for n, w in zip(available, weights))}"
+    base["baselineDetail"] = f"blend:per_season_weights({','.join(available)})"
     return base
 
 
@@ -1207,6 +1417,17 @@ def print_summary(
         print(pooled_summary.to_string())
 
 
+def _safe_compare_models(
+    predictions_by_model: dict[str, pd.DataFrame],
+    reference_model: str,
+) -> dict[str, object]:
+    try:
+        from .statistical_tests import compare_models
+        return compare_models(predictions_by_model, reference_model)
+    except Exception:
+        return {"note": "statistical tests unavailable (scipy not installed)"}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", default=str(PROCESSED_ROOT / "tournament_training_games.parquet"))
@@ -1218,6 +1439,8 @@ def main() -> None:
     )
     parser.add_argument("--latest-output", default=str(MODEL_ROOT / "tournament-consensus-latest.json"))
     parser.add_argument("--promote-if-best", action="store_true")
+    parser.add_argument("--tune", action="store_true", help="Run optuna hyperparameter tuning before backtest")
+    parser.add_argument("--tune-trials", type=int, default=40, help="Number of optuna trials")
     args = parser.parse_args()
 
     frame = pd.read_parquet(args.dataset).copy()
@@ -1242,6 +1465,19 @@ def main() -> None:
             "opp_legacy_massey_value",
         ],
     )
+
+    # Optional hyperparameter tuning via optuna
+    if args.tune:
+        tuned = tune_hyperparameters(
+            frame,
+            enhanced_candidate_feature_frame,
+            win_feature_names=ENHANCED_WIN_FEATURES,
+            n_trials=args.tune_trials,
+        )
+        global GBM_DISTILLATION_PARAMS, DISTILLATION_BLEND, TEMPORAL_DECAY
+        GBM_DISTILLATION_PARAMS = tuned["gbm_params"]
+        DISTILLATION_BLEND = tuned["distillation_blend"]
+        TEMPORAL_DECAY = tuned["temporal_decay"]
 
     backtest_rows, predictions_by_model = rolling_backtest(frame)
     if not backtest_rows:
@@ -1415,6 +1651,7 @@ def main() -> None:
         "featureImportance": candidate_feature_importance(candidate_bundle),
         "featureSemantics": feature_semantics(),
         "errorSlices": slice_report(predictions_by_model),
+        "statisticalTests": _safe_compare_models(predictions_by_model, best_candidate_name),
         "promotion": {
             "requested": bool(args.promote_if_best),
             "bestCandidate": best_candidate_name,

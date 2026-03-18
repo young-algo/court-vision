@@ -354,15 +354,16 @@ function buildGames(field: BracketEntry[]): Game[] {
   return BRACKET_REGIONS.flatMap((region) => {
     const regionEntries = field.filter((entry) => entry.region === region);
 
-    return firstRoundPairings.map(([seedA, seedB], index) => {
+    return firstRoundPairings.flatMap(([seedA, seedB], index) => {
       const entryA = regionEntries.find((entry) => entry.seed === seedA);
       const entryB = regionEntries.find((entry) => entry.seed === seedB);
 
       if (!entryA || !entryB) {
-        throw new Error(`Missing bracket seed line for ${region} ${seedA}/${seedB}`);
+        console.warn(`[games] Missing bracket seed line for ${region} ${seedA}/${seedB} — skipping`);
+        return [];
       }
 
-      return {
+      return [{
         id: `${dateByRegion[region]}-${region.toLowerCase()}-${seedA}-${seedB}`,
         season: CURRENT_SEASON,
         date: dateByRegion[region],
@@ -375,7 +376,7 @@ function buildGames(field: BracketEntry[]): Game[] {
         teamBId: entryB.teamId,
         venue: "neutral" as const,
         scheduleSource: "seeded_rankings" as const,
-      };
+      }];
     });
   });
 }

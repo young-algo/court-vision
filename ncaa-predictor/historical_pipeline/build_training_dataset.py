@@ -215,7 +215,7 @@ def expand_perspectives(features: pd.DataFrame) -> pd.DataFrame:
     return pd.concat([features, reverse], ignore_index=True)
 
 
-def rank_to_percentile(rank: pd.Series, season_max: pd.Series) -> pd.Series:
+def rank_to_percentile(rank: pd.Series) -> pd.Series:
     FIXED_FIELD_SIZE = 362  # typical D1 team count; matches TS runtime denominator
     return 1 - ((rank - 1) / (FIXED_FIELD_SIZE - 1))
 
@@ -232,8 +232,8 @@ def add_rank_feature(frame: pd.DataFrame, feature: str) -> None:
     team_values = pd.to_numeric(frame[team_col], errors="coerce")
     opp_values = pd.to_numeric(frame[opp_col], errors="coerce")
     frame[missing_col] = (team_values.isna() | opp_values.isna()).astype(int)
-    team_pct = rank_to_percentile(team_values.where(team_values.notna(), season_max), season_max)
-    opp_pct = rank_to_percentile(opp_values.where(opp_values.notna(), season_max), season_max)
+    team_pct = rank_to_percentile(team_values.where(team_values.notna(), season_max))
+    opp_pct = rank_to_percentile(opp_values.where(opp_values.notna(), season_max))
     frame[diff_col] = (team_pct - opp_pct).where(frame[missing_col] == 0, 0.0)
 
 
@@ -340,21 +340,24 @@ def apply_semantic_features(features: pd.DataFrame) -> pd.DataFrame:
     enriched["log_abs_seed_diff"] = np.log1p(enriched["seed_diff"].abs()).astype(float)
 
     # --- Rating disagreement features (Step 3) ---
-    power_diff_columns = []
-    for col_name in [
-        "kenpom_badj_em_power_diff",
-        "evanmiya_relative_rating_power_diff",
-        "bpi_rank_percentile_diff",
-        "massey_ordinal_rank_percentile_diff",
-    ]:
+    # Normalize all signals to a common scale before computing disagreement.
+    # Power diffs (kenpom, evanmiya) are divided by typical D1 range to bring
+    # them onto the same ~[0,1] scale as percentile diffs.
+    DISAGREEMENT_SCALE = {
+        "kenpom_badj_em_power_diff": 30.0,
+        "evanmiya_relative_rating_power_diff": 25.0,
+        "bpi_rank_percentile_diff": 1.0,
+        "massey_ordinal_rank_percentile_diff": 1.0,
+    }
+    normalized_diff_columns = []
+    for col_name, scale in DISAGREEMENT_SCALE.items():
         missing_col = f"missing_{col_name.removesuffix('_power_diff').removesuffix('_percentile_diff')}"
+        raw = enriched[col_name] / scale
         if missing_col in enriched.columns:
-            power_diff_columns.append(
-                enriched[col_name].where(enriched[missing_col] == 0, np.nan)
-            )
+            normalized_diff_columns.append(raw.where(enriched[missing_col] == 0, np.nan))
         else:
-            power_diff_columns.append(enriched[col_name])
-    diff_frame = pd.concat(power_diff_columns, axis=1)
+            normalized_diff_columns.append(raw)
+    diff_frame = pd.concat(normalized_diff_columns, axis=1)
     enriched["rating_disagreement"] = diff_frame.std(axis=1, skipna=True).fillna(0.0)
     enriched["max_min_rating_spread"] = (
         diff_frame.max(axis=1, skipna=True) - diff_frame.min(axis=1, skipna=True)
@@ -413,6 +416,25 @@ def main() -> None:
             "No seasons cleared the minimum predictive-source coverage threshold."
         )
     features = features[features["season"].isin(modeled_seasons)].copy()
+
+    # --- Merge Elo ratings if Kaggle game data is available ---
+    try:
+        from .elo import compute_elo_ratings, merge_elo_into_training
+        elo_df = compute_elo_ratings()
+        if elo_df is not None:
+            features = merge_elo_into_training(features, elo_df)
+            elo_coverage = (features["missing_elo"] == 0).mean()
+            print(f"Elo ratings merged: {elo_coverage:.1%} coverage")
+        else:
+            features["elo_diff"] = 0.0
+            features["elo_rank_percentile_diff"] = 0.0
+            features["missing_elo"] = 1
+            print("No Kaggle regular season results found — Elo features will be missing")
+    except Exception as exc:
+        features["elo_diff"] = 0.0
+        features["elo_rank_percentile_diff"] = 0.0
+        features["missing_elo"] = 1
+        print(f"Elo computation failed ({exc}) — features will be missing")
 
     # --- Merge betting odds if available (Step 5) ---
     odds_path = Path(args.odds)

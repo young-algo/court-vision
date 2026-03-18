@@ -7,6 +7,7 @@ import {
   matchupQuerySchema,
   teamsQuerySchema,
 } from "@shared/schema";
+import { logger } from "./logger";
 import { storage } from "./storage";
 import {
   buildOddsMap,
@@ -36,9 +37,9 @@ async function refreshOdds(): Promise<void> {
     const liveOdds = await getLiveOdds();
     const oddsMap = buildOddsMap(liveOdds, teamMap);
     predictionService.setOddsMap(oddsMap);
-    console.log(`[odds] refreshed: ${oddsMap.size} matched games from ${liveOdds.length} live events`);
+    logger.info("odds refreshed", { matchedGames: oddsMap.size, liveEvents: liveOdds.length });
   } catch (err) {
-    console.warn("[odds] refresh failed (non-fatal):", err instanceof Error ? err.message : String(err));
+    logger.warn("odds refresh failed (non-fatal)", { error: err instanceof Error ? err.message : String(err) });
   }
 }
 
@@ -116,6 +117,30 @@ export async function registerRoutes(
     res.json({
       modelRun: storage.getPredictionService().getModelRun(),
     });
+  });
+
+  app.get("/api/model-runs/calibration", async (_req, res, next) => {
+    try {
+      const fs = await import("fs");
+      const path = await import("path");
+      const candidates = [
+        path.resolve(process.cwd(), "data/models/tournament-consensus-report.json"),
+        path.resolve(process.cwd(), "dist/models/tournament-consensus-report.json"),
+      ];
+      const reportPath = candidates.find((p) => fs.existsSync(p));
+      if (!reportPath) {
+        res.json({ calibrationBuckets: {}, pooledMetrics: {} });
+        return;
+      }
+      const report = JSON.parse(fs.readFileSync(reportPath, "utf-8"));
+      res.json({
+        calibrationBuckets: report.calibrationBuckets ?? {},
+        pooledMetrics: report.pooledMetrics ?? {},
+        bestCandidate: report.promotion?.bestCandidate ?? null,
+      });
+    } catch (error) {
+      next(error);
+    }
   });
 
   /**
